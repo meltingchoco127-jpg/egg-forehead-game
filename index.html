@@ -193,6 +193,28 @@
       outline: none;
     }
 
+
+    .login-status {
+      margin: 14px auto 18px;
+      padding: 11px 14px;
+      width: fit-content;
+      max-width: 100%;
+      border-radius: 999px;
+      background: rgba(255, 242, 189, .74);
+      color: rgba(76, 47, 25, .78);
+      font-weight: 900;
+      line-height: 1.35;
+      word-break: keep-all;
+    }
+
+    .login-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
     .scoreline {
       margin: 10px 0 4px;
       color: #e06912;
@@ -275,7 +297,11 @@
       <div class="badge">🥚 30초 클릭 챌린지</div>
       <h1>계란 이마 챌린지</h1>
       <p>캐릭터를 클릭하면 계란이 날아가 이마에 부딪힙니다.<br />30초 동안 최대한 많이 맞혀보세요.</p>
-      <button id="startBtn" type="button">게임 시작</button>
+      <p class="login-status" id="authStatus">치지직 로그인 확인 중...</p>
+      <div class="login-actions">
+        <button id="startBtn" type="button">치지직 로그인 후 시작</button>
+        <button id="loginBtn" class="secondary" type="button">치지직 로그인</button>
+      </div>
     </div>
   </section>
 
@@ -284,8 +310,8 @@
       <div class="badge">⏱️ 게임 종료</div>
       <h1>기록 완료!</h1>
       <div class="scoreline" id="finalScoreText">0개</div>
-      <input id="nameInput" maxlength="12" placeholder="이름을 입력하세요" autocomplete="off" />
-      <button id="saveRankBtn" type="button">랭킹 등록</button>
+      <p class="login-status" id="submitStatus">치지직 계정으로 랭킹 등록 중...</p>
+      <button id="saveRankBtn" class="secondary" type="button">다시 등록 시도</button>
     </div>
   </section>
 
@@ -301,7 +327,6 @@
 
   <div id="toast" class="toast hidden"></div>
 
-  <script src="./firebase-config.js"></script>
   <script type="module">
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
@@ -317,7 +342,9 @@
     const saveRankBtn = document.getElementById('saveRankBtn');
     const againBtn = document.getElementById('againBtn');
     const refreshRankBtn = document.getElementById('refreshRankBtn');
-    const nameInput = document.getElementById('nameInput');
+    const loginBtn = document.getElementById('loginBtn');
+    const authStatus = document.getElementById('authStatus');
+    const submitStatus = document.getElementById('submitStatus');
     const finalScoreText = document.getElementById('finalScoreText');
     const rankList = document.getElementById('rankList');
     const toast = document.getElementById('toast');
@@ -331,6 +358,10 @@
     const ACTIVE_SAFE_MS = 1200;
     const ASSET = './assets/';
     const SOUND = './assets/sounds/';
+
+    // Cloudflare Worker 주소입니다. Worker 이름/계정이 바뀌면 이 값만 수정하세요.
+    const WORKER_BASE = 'https://egg-chzzk-auth.jis127.workers.dev';
+    const SESSION_KEY = 'egg-forehead-chzzk-session-v1';
 
     const SOURCE = { w: 3000, h: 2000 };
 
@@ -378,19 +409,12 @@
       visibleBBox: { x1: 478, y1: 49, x2: 2332, y2: 1916 }
     };
 
-    const cloud = {
-      ready: false,
-      failed: false,
-      app: null,
-      db: null,
-      addDoc: null,
-      collection: null,
-      serverTimestamp: null,
-      getDocs: null,
-      query: null,
-      orderBy: null,
-      limit: null
+    const auth = {
+      loading: true,
+      session: '',
+      user: null
     };
+
 
     function show(el) { el.classList.remove('hidden'); }
     function hide(el) { el.classList.add('hidden'); }
@@ -602,6 +626,16 @@
     function startGame() {
       if (state === 'ready' || state === 'playing') return;
 
+      if (auth.loading) {
+        say('치지직 로그인 상태를 확인 중입니다.');
+        return;
+      }
+
+      if (!auth.session || !auth.user) {
+        loginWithChzzk();
+        return;
+      }
+
       ensureAudioAfterGesture();
       clearRound();
       state = 'ready';
@@ -620,9 +654,8 @@
       state = 'ended';
       playFinishSound();
       finalScoreText.textContent = `${score}개`;
-      nameInput.value = '';
       show(nameOverlay);
-      setTimeout(() => nameInput.focus(), 80);
+      submitScoreAndShow();
     }
 
     function onCanvasClick(evt) {
@@ -1043,99 +1076,145 @@
       requestAnimationFrame(loop);
     }
 
-    async function initFirebase() {
-      const cfg = window.EGG_GAME_FIREBASE_CONFIG;
-      if (!cfg || !cfg.apiKey || String(cfg.apiKey).includes('YOUR_')) {
-        cloud.ready = false;
+    function loginWithChzzk() {
+      location.href = `${WORKER_BASE}/login`;
+    }
+
+    function getHashParams() {
+      const raw = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
+      return new URLSearchParams(raw);
+    }
+
+    function consumeLoginHash() {
+      const params = getHashParams();
+      const session = params.get('chzzk_session');
+
+      if (session) {
+        localStorage.setItem(SESSION_KEY, session);
+        auth.session = session;
+        history.replaceState(null, '', location.pathname + location.search);
+        return true;
+      }
+
+      const error = params.get('error');
+      if (error) {
+        history.replaceState(null, '', location.pathname + location.search);
+        say(`치지직 로그인 실패: ${error}`);
+      }
+
+      return false;
+    }
+
+    async function workerRequest(path, options = {}) {
+      const headers = new Headers(options.headers || {});
+      if (!headers.has('Content-Type') && options.body) {
+        headers.set('Content-Type', 'application/json');
+      }
+
+      if (auth.session) {
+        headers.set('Authorization', `Bearer ${auth.session}`);
+      }
+
+      const res = await fetch(`${WORKER_BASE}${path}`, {
+        ...options,
+        headers
+      });
+
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+      if (!res.ok || data.ok === false) {
+        const err = new Error(data.error || data.message || `Worker request failed: ${res.status}`);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+
+      return data;
+    }
+
+    function updateAuthUi() {
+      if (auth.loading) {
+        authStatus.textContent = '치지직 로그인 확인 중...';
+        startBtn.textContent = '확인 중...';
+        startBtn.disabled = true;
+        loginBtn.style.display = '';
+        return;
+      }
+
+      startBtn.disabled = false;
+
+      if (auth.user) {
+        authStatus.textContent = `${auth.user.channelName}님으로 로그인됨`;
+        startBtn.textContent = '게임 시작';
+        loginBtn.textContent = '다른 계정으로 로그인';
+        loginBtn.style.display = '';
+      } else {
+        authStatus.textContent = '랭킹 등록을 위해 치지직 로그인이 필요합니다.';
+        startBtn.textContent = '치지직 로그인 후 시작';
+        loginBtn.textContent = '치지직 로그인';
+        loginBtn.style.display = '';
+      }
+    }
+
+    async function initChzzkAuth() {
+      auth.loading = true;
+      consumeLoginHash();
+
+      if (!auth.session) {
+        auth.session = localStorage.getItem(SESSION_KEY) || '';
+      }
+
+      if (!auth.session) {
+        auth.user = null;
+        auth.loading = false;
+        updateAuthUi();
         return;
       }
 
       try {
-        const appMod = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js');
-        const firestoreMod = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
-
-        cloud.app = appMod.initializeApp(cfg);
-        cloud.db = firestoreMod.getFirestore(cloud.app);
-        cloud.addDoc = firestoreMod.addDoc;
-        cloud.collection = firestoreMod.collection;
-        cloud.serverTimestamp = firestoreMod.serverTimestamp;
-        cloud.getDocs = firestoreMod.getDocs;
-        cloud.query = firestoreMod.query;
-        cloud.orderBy = firestoreMod.orderBy;
-        cloud.limit = firestoreMod.limit;
-        cloud.ready = true;
+        const data = await workerRequest('/me');
+        auth.user = data.user;
       } catch (err) {
-        console.warn('[Firebase 연결 실패: 로컬 랭킹 사용]', err);
-        cloud.failed = true;
+        console.warn('[chzzk session invalid]', err);
+        localStorage.removeItem(SESSION_KEY);
+        auth.session = '';
+        auth.user = null;
+      } finally {
+        auth.loading = false;
+        updateAuthUi();
       }
-    }
-
-    function localRanks() {
-      try {
-        return JSON.parse(localStorage.getItem('egg-forehead-ranks-v3') || '[]');
-      } catch {
-        return [];
-      }
-    }
-
-    function saveLocalRanks(ranks) {
-      localStorage.setItem('egg-forehead-ranks-v3', JSON.stringify(ranks.slice(0, 10)));
-    }
-
-    async function saveRank(name, scoreValue) {
-      const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      lastSavedId = id;
-
-      if (cloud.ready) {
-        await cloud.addDoc(cloud.collection(cloud.db, 'rankings'), {
-          name,
-          score: scoreValue,
-          duration: GAME_SECONDS,
-          createdAt: cloud.serverTimestamp()
-        });
-        return;
-      }
-
-      const ranks = localRanks();
-      ranks.push({ id, name, score: scoreValue, createdAt: Date.now() });
-      ranks.sort((a, b) => b.score - a.score || a.createdAt - b.createdAt);
-      saveLocalRanks(ranks);
     }
 
     async function fetchRanks() {
-      if (cloud.ready) {
-        // 복합 색인 없이 동작하도록 Firestore에서는 score 단일 정렬만 사용합니다.
-        // 같은 점수의 createdAt 정렬은 브라우저에서 처리합니다.
-        const q = cloud.query(
-          cloud.collection(cloud.db, 'rankings'),
-          cloud.orderBy('score', 'desc'),
-          cloud.limit(50)
-        );
-        const snap = await cloud.getDocs(q);
-        return snap.docs
-          .map((doc) => {
-            const data = doc.data();
-            const createdAt = data.createdAt && typeof data.createdAt.toMillis === 'function'
-              ? data.createdAt.toMillis()
-              : 0;
-
-            return {
-              id: doc.id,
-              name: data.name || '익명',
-              score: Number(data.score || 0),
-              createdAt
-            };
-          })
-          .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
-          .slice(0, 10);
-      }
-
-      return localRanks().slice(0, 10);
+      const data = await workerRequest('/rankings');
+      return (data.rankings || [])
+        .map((r, index) => ({
+          id: `${r.chzzkChannelId || r.name}-${r.createdAt || index}`,
+          name: r.name || '이름 없음',
+          chzzkChannelId: r.chzzkChannelId || '',
+          score: Number(r.score || 0),
+          createdAt: r.createdAt || ''
+        }))
+        .sort((a, b) => b.score - a.score || String(a.createdAt).localeCompare(String(b.createdAt)))
+        .slice(0, 10);
     }
 
     async function renderRanks() {
       rankList.innerHTML = '';
-      const ranks = await fetchRanks();
+
+      let ranks;
+      try {
+        ranks = await fetchRanks();
+      } catch (err) {
+        console.error('[rank load failed]', err);
+        const li = document.createElement('li');
+        li.style.gridTemplateColumns = '1fr';
+        li.textContent = '랭킹을 불러오지 못했습니다. Worker와 Firebase 설정을 확인해 주세요.';
+        rankList.appendChild(li);
+        return;
+      }
 
       if (!ranks.length) {
         const li = document.createElement('li');
@@ -1147,42 +1226,75 @@
 
       ranks.forEach((r, i) => {
         const li = document.createElement('li');
-        if (r.id === lastSavedId) li.classList.add('me');
+        if (auth.user && r.chzzkChannelId === auth.user.channelId && r.score === lastSavedId) {
+          li.classList.add('me');
+        }
         li.innerHTML = `<span>${i + 1}위</span><span></span><strong>${r.score}개</strong>`;
         li.children[1].textContent = r.name;
         rankList.appendChild(li);
       });
     }
 
-    async function saveRankAndShow() {
-      const name = nameInput.value.trim().slice(0, 12);
-      if (!name) {
-        say('이름을 입력해 주세요.');
-        nameInput.focus();
+    async function submitScoreAndShow() {
+      if (!auth.session || !auth.user) {
+        submitStatus.textContent = '치지직 로그인이 필요합니다.';
+        saveRankBtn.textContent = '치지직 로그인';
+        saveRankBtn.disabled = false;
+        saveRankBtn.onclick = loginWithChzzk;
+        say('치지직 로그인 후 랭킹 등록이 가능합니다.');
         return;
       }
 
+      submitStatus.textContent = `${auth.user.channelName}님 기록을 등록 중...`;
       saveRankBtn.disabled = true;
-      try {
-        await saveRank(name, score);
-      } catch (err) {
-        console.error('[rank save failed]', err);
-        say('랭킹 저장에 실패했습니다. Firebase 설정을 확인해 주세요.');
-        saveRankBtn.disabled = false;
-        return;
-      }
-
-      hide(nameOverlay);
-      show(rankOverlay);
+      saveRankBtn.textContent = '등록 중...';
 
       try {
-        await renderRanks();
+        const data = await workerRequest('/submit-score', {
+          method: 'POST',
+          body: JSON.stringify({ score, duration: GAME_SECONDS })
+        });
+
+        lastSavedId = score;
+
+        hide(nameOverlay);
+        show(rankOverlay);
+
+        rankList.innerHTML = '';
+        const ranks = data.rankings || [];
+        if (!ranks.length) {
+          await renderRanks();
+        } else {
+          ranks.forEach((r, i) => {
+            const li = document.createElement('li');
+            if (auth.user && r.chzzkChannelId === auth.user.channelId && Number(r.score || 0) === score) {
+              li.classList.add('me');
+            }
+            li.innerHTML = `<span>${i + 1}위</span><span></span><strong>${Number(r.score || 0)}개</strong>`;
+            li.children[1].textContent = r.name || '이름 없음';
+            rankList.appendChild(li);
+          });
+        }
+
+        say('치지직 랭킹 등록 완료!');
       } catch (err) {
-        console.error('[rank load failed]', err);
-        rankList.innerHTML = '<li style="grid-template-columns:1fr;">랭킹을 불러오지 못했습니다. Firestore 색인 또는 규칙을 확인해 주세요.</li>';
-        say('랭킹 불러오기에 실패했습니다.');
-      } finally {
+        console.error('[submit score failed]', err);
+        submitStatus.textContent = '랭킹 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+        saveRankBtn.textContent = '다시 등록 시도';
         saveRankBtn.disabled = false;
+        saveRankBtn.onclick = submitScoreAndShow;
+
+        if (err.status === 401) {
+          localStorage.removeItem(SESSION_KEY);
+          auth.session = '';
+          auth.user = null;
+          updateAuthUi();
+          submitStatus.textContent = '로그인이 만료되었습니다. 다시 로그인해 주세요.';
+          saveRankBtn.textContent = '치지직 로그인';
+          saveRankBtn.onclick = loginWithChzzk;
+        }
+
+        say('랭킹 등록 실패');
       }
     }
 
@@ -1197,7 +1309,7 @@
       for (const [key, img] of entries) images[key] = img;
 
       state = 'start';
-      await initFirebase();
+      await initChzzkAuth();
       hide(toast);
 
       // 브라우저가 허용하면 페이지 오픈 시 카캇 → BGM 순서로 재생합니다.
@@ -1212,6 +1324,7 @@
     }, { passive: false });
 
     startBtn.addEventListener('click', startGame);
+    loginBtn.addEventListener('click', loginWithChzzk);
     bgmToggle.addEventListener('click', toggleBgm);
     window.addEventListener('pointerdown', ensureAudioAfterGesture, { once: true });
     window.addEventListener('keydown', ensureAudioAfterGesture, { once: true });
@@ -1224,10 +1337,7 @@
       clearRound();
     });
     refreshRankBtn.addEventListener('click', renderRanks);
-    saveRankBtn.addEventListener('click', saveRankAndShow);
-    nameInput.addEventListener('keydown', (evt) => {
-      if (evt.key === 'Enter') saveRankAndShow();
-    });
+    saveRankBtn.addEventListener('click', submitScoreAndShow);
 
     requestAnimationFrame(loop);
     init();
