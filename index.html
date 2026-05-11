@@ -212,6 +212,10 @@
       opacity: .66;
     }
 
+    #loadStatus {
+      display: none !important;
+    }
+
     @media (max-width: 520px) {
       .card {
         padding: 26px 20px 24px;
@@ -379,7 +383,7 @@
         w: 520,
         h: 488,
         foreheadX: 0,
-        foreheadY: -164,
+        foreheadY: -118,
         clickPadX: 250,
         clickPadY: 236
       };
@@ -929,7 +933,9 @@
 
       function drawDebris(behindCharacter) {
         for (const item of debris) {
-          const shouldBeBehind = item.y < character.y + 60;
+          // 이마 충돌 직후의 계란 조각은 반드시 캐릭터 앞에서 보이도록 둡니다.
+          // 충분히 떨어진 뒤 머리 위쪽에 남아 있는 조각만 뒤 레이어로 보냅니다.
+          const shouldBeBehind = item.age > 0.55 && item.y < character.y + 40;
           if (behindCharacter !== shouldBeBehind) continue;
 
           ctx.save();
