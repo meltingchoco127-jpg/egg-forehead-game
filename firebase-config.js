@@ -1,10 +1,4 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
+window.EGG_GAME_FIREBASE_CONFIG = {
   apiKey: "AIzaSyBY93PA1x1k3aBtZ8wVxUbIRa2srgL5cho",
   authDomain: "egg-click-game.firebaseapp.com",
   projectId: "egg-click-game",
