@@ -299,8 +299,9 @@
       <p>캐릭터를 클릭하면 계란이 날아가 이마에 부딪힙니다.<br />30초 동안 최대한 많이 맞혀보세요.</p>
       <p class="login-status" id="authStatus">치지직 로그인 확인 중...</p>
       <div class="login-actions">
-        <button id="startBtn" type="button">치지직 로그인 후 시작</button>
+        <button id="startBtn" type="button">게임 시작</button>
         <button id="loginBtn" class="secondary" type="button">치지직 로그인</button>
+        <button id="logoutBtn" class="secondary hidden" type="button">로그아웃</button>
       </div>
     </div>
   </section>
@@ -343,6 +344,7 @@
     const againBtn = document.getElementById('againBtn');
     const refreshRankBtn = document.getElementById('refreshRankBtn');
     const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
     const authStatus = document.getElementById('authStatus');
     const submitStatus = document.getElementById('submitStatus');
     const finalScoreText = document.getElementById('finalScoreText');
@@ -627,13 +629,12 @@
       if (state === 'ready' || state === 'playing') return;
 
       if (auth.loading) {
-        say('치지직 로그인 상태를 확인 중입니다.');
+        say('치지직 로그인 상태를 확인 중입니다. 잠시 후 다시 눌러 주세요.');
         return;
       }
 
       if (!auth.session || !auth.user) {
-        loginWithChzzk();
-        return;
+        say('로그인하지 않은 상태로 플레이합니다. 이번 기록은 랭킹에 등록되지 않습니다.');
       }
 
       ensureAudioAfterGesture();
@@ -1080,6 +1081,15 @@
       location.href = `${WORKER_BASE}/login`;
     }
 
+    function logoutChzzk() {
+      localStorage.removeItem(SESSION_KEY);
+      auth.session = '';
+      auth.user = null;
+      auth.loading = false;
+      updateAuthUi();
+      say('로그아웃되었습니다. 로그인하지 않은 기록은 랭킹에 등록되지 않습니다.');
+    }
+
     function getHashParams() {
       const raw = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
       return new URLSearchParams(raw);
@@ -1140,21 +1150,23 @@
         startBtn.textContent = '확인 중...';
         startBtn.disabled = true;
         loginBtn.style.display = '';
+        logoutBtn.classList.add('hidden');
         return;
       }
 
       startBtn.disabled = false;
+      startBtn.textContent = '게임 시작';
 
       if (auth.user) {
-        authStatus.textContent = `${auth.user.channelName}님으로 로그인됨`;
-        startBtn.textContent = '게임 시작';
+        authStatus.textContent = `${auth.user.channelName}님으로 로그인됨 · 랭킹 등록 가능`;
         loginBtn.textContent = '다른 계정으로 로그인';
         loginBtn.style.display = '';
+        logoutBtn.classList.remove('hidden');
       } else {
-        authStatus.textContent = '랭킹 등록을 위해 치지직 로그인이 필요합니다.';
-        startBtn.textContent = '치지직 로그인 후 시작';
+        authStatus.textContent = '로그인하지 않아도 플레이할 수 있습니다. 단, 로그인하지 않을 시 랭킹이 등록되지 않습니다.';
         loginBtn.textContent = '치지직 로그인';
         loginBtn.style.display = '';
+        logoutBtn.classList.add('hidden');
       }
     }
 
@@ -1237,11 +1249,15 @@
 
     async function submitScoreAndShow() {
       if (!auth.session || !auth.user) {
-        submitStatus.textContent = '치지직 로그인이 필요합니다.';
-        saveRankBtn.textContent = '치지직 로그인';
+        submitStatus.textContent = '로그인하지 않은 상태로 플레이하여 이번 기록은 랭킹에 등록되지 않습니다.';
+        saveRankBtn.textContent = '랭킹 보기';
         saveRankBtn.disabled = false;
-        saveRankBtn.onclick = loginWithChzzk;
-        say('치지직 로그인 후 랭킹 등록이 가능합니다.');
+        saveRankBtn.onclick = async () => {
+          hide(nameOverlay);
+          show(rankOverlay);
+          await renderRanks();
+        };
+        say('로그인하지 않을 시 랭킹이 등록되지 않습니다.');
         return;
       }
 
@@ -1325,6 +1341,7 @@
 
     startBtn.addEventListener('click', startGame);
     loginBtn.addEventListener('click', loginWithChzzk);
+    logoutBtn.addEventListener('click', logoutChzzk);
     bgmToggle.addEventListener('click', toggleBgm);
     window.addEventListener('pointerdown', ensureAudioAfterGesture, { once: true });
     window.addEventListener('keydown', ensureAudioAfterGesture, { once: true });
@@ -1335,6 +1352,7 @@
       state = 'start';
       clearTimeout(readyTimer);
       clearRound();
+      updateAuthUi();
     });
     refreshRankBtn.addEventListener('click', renderRanks);
     saveRankBtn.addEventListener('click', submitScoreAndShow);
