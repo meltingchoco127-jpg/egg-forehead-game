@@ -485,6 +485,15 @@
         egg: { sx: 0, sy: 0, sw: 500, sh: 500 }
       };
 
+      // 계란 맞는 모션은 새 GIF의 앞머리가 기본 자세보다 높아져
+      // 같은 위치에 그리면 화면 상단에서 잘려 보일 수 있습니다.
+      // 리소스 이미지는 그대로 두고, Canvas에 그리는 위치와 크기만 보정합니다.
+      const HIT_POSE_DRAW = {
+        scale: 0.96,
+        offsetX: 0,
+        offsetY: 30
+      };
+
       const character = {
         x: W / 2,
         y: 406,
@@ -1108,16 +1117,21 @@
             Math.floor(elapsed / CROP.hitSprite.frameMs)
           );
 
+          const hitDrawW = character.w * HIT_POSE_DRAW.scale;
+          const hitDrawH = character.h * HIT_POSE_DRAW.scale;
+          const hitDrawX = character.x - hitDrawW / 2 + HIT_POSE_DRAW.offsetX;
+          const hitDrawY = character.y - hitDrawH / 2 + HIT_POSE_DRAW.offsetY;
+
           ctx.drawImage(
             images.hitSprite,
             frameIndex * CROP.hitSprite.frameW,
             0,
             CROP.hitSprite.frameW,
             CROP.hitSprite.frameH,
-            character.x - character.w / 2,
-            character.y - character.h / 2,
-            character.w,
-            character.h
+            hitDrawX,
+            hitDrawY,
+            hitDrawW,
+            hitDrawH
           );
         } else {
           const useGifFallback = isHitPose && gifImg && gifImg.complete && loaded.hit && !failed.hit;
