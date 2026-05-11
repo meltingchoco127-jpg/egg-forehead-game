@@ -324,10 +324,11 @@
 
     const GAME_SECONDS = 30;
     const FLOOR_Y = 650;
-    // 너무 많은 바닥 껍질이 새 이펙트를 바로 지워버리지 않도록,
-    // 오래 멈춘 조각부터 정리합니다. 새로 깨지는 조각은 항상 보존됩니다.
-    const MAX_DEBRIS = 900;
-    const DEBRIS_SAFE_MS = 1300;
+    // activeDebris는 방금 깨져서 날아가는 조각만 보관합니다.
+    // 바닥에 멈춘 조각은 floorLitter로 옮겨서 새 이펙트가 절대 삭제되지 않게 합니다.
+    const MAX_ACTIVE_DEBRIS = 360;
+    const MAX_FLOOR_LITTER = 220;
+    const ACTIVE_SAFE_MS = 1200;
     const ASSET = './assets/';
     const SOUND = './assets/sounds/';
 
@@ -349,6 +350,7 @@
     const images = {};
     const projectiles = [];
     const debris = [];
+    const floorLitter = [];
     const impactMarks = [];
 
     let state = 'loading';
@@ -585,6 +587,7 @@
       score = 0;
       projectiles.length = 0;
       debris.length = 0;
+      floorLitter.length = 0;
       impactMarks.length = 0;
       hitAnimStart = -Infinity;
     }
@@ -712,30 +715,48 @@
         settleFrame: 0
       });
 
-      trimDebris(false);
+      trimActiveDebris();
     }
 
-    function trimDebris(force) {
-      if (debris.length <= MAX_DEBRIS && !force) return;
+    function addFloorLitter(d) {
+      // 바닥에 멈춘 조각은 별도 배열로 옮깁니다.
+      // 이렇게 해야 80~100점 이상에서도 새로 깨지는 조각이 항상 보입니다.
+      floorLitter.push({
+        type: d.type,
+        x: d.x,
+        y: d.y,
+        rot: d.rot,
+        size: d.size,
+        born: d.born,
+        settled: true,
+        settleFrame: d.settleFrame ?? 0
+      });
+      trimFloorLitter();
+    }
 
-      // 1순위: 이미 바닥에 멈춘 오래된 조각부터 제거합니다.
-      for (let i = 0; i < debris.length && debris.length > MAX_DEBRIS; ) {
+    function trimFloorLitter() {
+      // 오래된 바닥 껍질부터 제거합니다. 새로 깨지는 active debris에는 영향이 없습니다.
+      while (floorLitter.length > MAX_FLOOR_LITTER) {
+        floorLitter.shift();
+      }
+    }
+
+    function trimActiveDebris() {
+      if (debris.length <= MAX_ACTIVE_DEBRIS) return;
+
+      // 비정상적으로 클릭/프레임이 몰릴 때만 오래된 active 조각을 정리합니다.
+      for (let i = 0; i < debris.length && debris.length > MAX_ACTIVE_DEBRIS; ) {
         const d = debris[i];
-        if (d.settled && now - d.born > DEBRIS_SAFE_MS) {
+        if (now - d.born > ACTIVE_SAFE_MS) {
           debris.splice(i, 1);
         } else {
           i += 1;
         }
       }
 
-      // 그래도 너무 많으면, 최근에 생긴 이펙트는 남기고 오래된 조각부터 제거합니다.
-      for (let i = 0; i < debris.length && debris.length > MAX_DEBRIS; ) {
-        const d = debris[i];
-        if (now - d.born > DEBRIS_SAFE_MS) {
-          debris.splice(i, 1);
-        } else {
-          i += 1;
-        }
+      // 그래도 초과하면 가장 오래된 active 조각을 제거하되, 최근 이펙트는 최대한 보존합니다.
+      while (debris.length > MAX_ACTIVE_DEBRIS) {
+        debris.shift();
       }
     }
 
@@ -787,6 +808,9 @@
               if (d.type === 'peeled') {
                 d.settleFrame = (d.frameOffset + Math.floor(Math.max(0, now - d.born) / PEELED_SPRITE.frameMs)) % PEELED_SPRITE.frames;
               }
+              addFloorLitter(d);
+              debris.splice(i, 1);
+              continue;
             }
           }
         }
@@ -796,7 +820,7 @@
         }
       }
 
-      trimDebris(false);
+      trimActiveDebris();
 
       for (let i = impactMarks.length - 1; i >= 0; i--) {
         const b = impactMarks[i];
@@ -949,6 +973,12 @@
       else drawPeeledSprite(d);
     }
 
+    function drawFloorLitter() {
+      for (const d of floorLitter) {
+        drawDebrisItem(d);
+      }
+    }
+
     function drawDebris(layer) {
       for (const d of debris) {
         const isFront = now - d.born < d.frontMs || !d.settled;
@@ -995,6 +1025,7 @@
       drawBackground();
 
       drawDebris('back');
+      drawFloorLitter();
       drawCharacter();
       drawProjectiles();
       drawImpactMarks();
