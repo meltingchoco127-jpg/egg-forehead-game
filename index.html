@@ -229,12 +229,92 @@
         width: 100%;
       }
     }
+
+    #loadStatus {
+      display: none !important;
+    }
+
+    .bgm-toggle {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 18px);
+      right: calc(env(safe-area-inset-right, 0px) + 18px);
+      z-index: 40;
+      width: auto !important;
+      min-width: 122px;
+      height: 48px;
+      padding: 0 18px;
+      border: 2px solid rgba(255,255,255,.72);
+      color: #6c360f;
+      font-size: 16px;
+      font-weight: 950;
+      background: rgba(255, 255, 255, .88);
+      box-shadow: 0 9px 0 rgba(171, 94, 22, .55), 0 17px 30px rgba(99, 57, 15, .18);
+      backdrop-filter: blur(12px);
+    }
+
+    .bgm-toggle.is-off {
+      color: rgba(61, 42, 27, .58);
+      background: rgba(255, 255, 255, .62);
+      box-shadow: 0 9px 0 rgba(130, 113, 94, .48), 0 17px 30px rgba(99, 57, 15, .12);
+    }
+
+    .ready-layer {
+      z-index: 35;
+      pointer-events: none;
+    }
+
+    .ready-bubble {
+      display: grid;
+      place-items: center;
+      min-width: min(70vw, 360px);
+      padding: 36px 54px;
+      border-radius: 40px;
+      color: #fff;
+      font-size: clamp(58px, 12vw, 110px);
+      font-weight: 1000;
+      letter-spacing: -0.08em;
+      text-shadow: 0 7px 0 rgba(112, 58, 14, .38), 0 12px 28px rgba(105, 55, 13, .34);
+      background: linear-gradient(180deg, rgba(255, 186, 61, .95), rgba(239, 116, 20, .94));
+      border: 4px solid rgba(255, 255, 255, .88);
+      box-shadow: 0 22px 64px rgba(107, 61, 18, .28);
+      animation: readyPop .78s cubic-bezier(.17, .84, .44, 1) both;
+    }
+
+    @keyframes readyPop {
+      0% { transform: scale(.6) rotate(-4deg); opacity: 0; }
+      45% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+
+    @media (max-width: 620px) {
+      .bgm-toggle {
+        top: calc(env(safe-area-inset-top, 0px) + 12px);
+        right: calc(env(safe-area-inset-right, 0px) + 12px);
+        min-width: 104px;
+        height: 42px;
+        padding: 0 13px;
+        font-size: 14px;
+      }
+
+      .ready-bubble {
+        min-width: min(76vw, 300px);
+        padding: 28px 38px;
+        border-radius: 32px;
+      }
+    }
+
   </style>
 </head>
 <body>
   <main id="app">
     <canvas id="game" width="1280" height="720" aria-label="계란 이마 챌린지 게임 화면"></canvas>
   </main>
+
+  <button id="bgmToggle" class="bgm-toggle" type="button" aria-pressed="true" aria-label="BGM 켜기 또는 끄기">🔊 BGM</button>
+
+  <section class="overlay ready-layer hidden" id="readyOverlay" aria-live="assertive">
+    <div class="ready-bubble">준비!</div>
+  </section>
 
   <section class="overlay" id="startOverlay" aria-live="polite">
     <div class="card">
@@ -291,6 +371,8 @@
       const startOverlay = document.getElementById('startOverlay');
       const nameOverlay = document.getElementById('nameOverlay');
       const rankOverlay = document.getElementById('rankOverlay');
+      const readyOverlay = document.getElementById('readyOverlay');
+      const bgmToggle = document.getElementById('bgmToggle');
       const startBtn = document.getElementById('startBtn');
       const saveRankBtn = document.getElementById('saveRankBtn');
       const againBtn = document.getElementById('againBtn');
@@ -371,6 +453,18 @@
         peeled: 'assets/깐계란.gif'
       };
 
+      const SOUNDS = {
+        intro: 'assets/sounds/카캇.mp3',
+        bgm: 'assets/sounds/Cats on Mars.mp3',
+        ready: 'assets/sounds/준비.mp3',
+        end: 'assets/sounds/쯔아아아앗_Vocals.wav',
+        hitVoices: [
+          'assets/sounds/안됏_Vocals.wav',
+          'assets/sounds/치_Vocals.wav',
+          'assets/sounds/흐에에에_Vocals.wav'
+        ]
+      };
+
       const CROP = {
         character: { sx: 440, sy: 120, sw: 1960, sh: 1840 },
         hitSprite: { frameW: 520, frameH: 488, frames: 10, frameMs: 40 },
@@ -403,9 +497,22 @@
       let finalScore = 0;
       let myRankId = null;
       let particles = [];
+      let readyTimerId = null;
 
       const projectiles = [];
       const debris = [];
+
+      const audio = {
+        intro: null,
+        bgm: null,
+        ready: null,
+        end: null,
+        hitVoices: [],
+        currentHitVoice: null,
+        bgmEnabled: true,
+        introAttempted: false,
+        introCompleted: false
+      };
 
       function rand(min, max) {
         return min + Math.random() * (max - min);
@@ -430,6 +537,136 @@
       function assetUrl(path) {
         return encodeURI(path);
       }
+
+      function createAudio(src, options = {}) {
+        const el = new Audio(assetUrl(src));
+        el.preload = 'auto';
+        el.loop = Boolean(options.loop);
+        el.volume = typeof options.volume === 'number' ? options.volume : 1;
+        return el;
+      }
+
+      function initAudio() {
+        audio.intro = createAudio(SOUNDS.intro, { volume: 0.95 });
+        audio.bgm = createAudio(SOUNDS.bgm, { volume: 0.46, loop: true });
+        audio.ready = createAudio(SOUNDS.ready, { volume: 1 });
+        audio.end = createAudio(SOUNDS.end, { volume: 1 });
+        audio.hitVoices = SOUNDS.hitVoices.map((src) => createAudio(src, { volume: 1 }));
+        updateBgmButton();
+      }
+
+      function tryPlay(el) {
+        if (!el) return Promise.resolve(false);
+        const result = el.play();
+        if (result && typeof result.catch === 'function') {
+          return result.then(() => true).catch(() => {
+            // 브라우저 자동재생 정책 때문에 사용자 조작 전에는 실패할 수 있습니다.
+            return false;
+          });
+        }
+        return Promise.resolve(true);
+      }
+
+      function stopAudio(el) {
+        if (!el) return;
+        el.pause();
+        try { el.currentTime = 0; } catch {}
+      }
+
+      function replaySound(el) {
+        if (!el) return;
+        stopAudio(el);
+        tryPlay(el);
+      }
+
+      function updateBgmButton() {
+        if (!bgmToggle) return;
+        bgmToggle.classList.toggle('is-off', !audio.bgmEnabled);
+        bgmToggle.setAttribute('aria-pressed', String(audio.bgmEnabled));
+        bgmToggle.textContent = audio.bgmEnabled ? '🔊 BGM' : '🔇 BGM';
+      }
+
+      function startBgm() {
+        if (!audio.bgmEnabled || !audio.bgm) return;
+        tryPlay(audio.bgm);
+      }
+
+      function stopBgm() {
+        if (audio.bgm) audio.bgm.pause();
+      }
+
+      function playIntroThenBgm() {
+        if (!audio.bgmEnabled) return;
+        if (audio.introCompleted || audio.introAttempted) {
+          startBgm();
+          return;
+        }
+
+        audio.introAttempted = true;
+        stopBgm();
+
+        if (!audio.intro) {
+          audio.introCompleted = true;
+          startBgm();
+          return;
+        }
+
+        stopAudio(audio.intro);
+        audio.intro.onended = () => {
+          audio.introCompleted = true;
+          startBgm();
+        };
+
+        tryPlay(audio.intro).then((played) => {
+          if (!played) {
+            audio.introAttempted = false;
+          }
+        });
+      }
+
+      function toggleBgm() {
+        audio.bgmEnabled = !audio.bgmEnabled;
+        updateBgmButton();
+
+        if (audio.bgmEnabled) {
+          playIntroThenBgm();
+        } else {
+          stopBgm();
+          stopAudio(audio.intro);
+        }
+      }
+
+      function playReadySound() {
+        replaySound(audio.ready);
+      }
+
+      function playEndSound() {
+        stopAudio(audio.currentHitVoice);
+        audio.currentHitVoice = null;
+        replaySound(audio.end);
+      }
+
+      function playRandomHitVoice() {
+        if (!audio.hitVoices.length) return;
+        stopAudio(audio.currentHitVoice);
+
+        const picked = audio.hitVoices[Math.floor(Math.random() * audio.hitVoices.length)];
+        audio.currentHitVoice = picked;
+        replaySound(picked);
+      }
+
+      function unlockAudioByUserGesture() {
+        playIntroThenBgm();
+      }
+
+      initAudio();
+      window.setTimeout(playIntroThenBgm, 180);
+      document.addEventListener('pointerdown', unlockAudioByUserGesture, { once: true });
+      document.addEventListener('keydown', unlockAudioByUserGesture, { once: true, capture: true });
+      bgmToggle.addEventListener('click', (evt) => {
+        evt.stopPropagation();
+        toggleBgm();
+      });
 
       function loadImage(key, src) {
         const img = new Image();
@@ -508,27 +745,47 @@
         );
       }
 
-      function startGame() {
-        state = 'playing';
+      function resetRoundObjects() {
         score = 0;
         finalScore = 0;
         myRankId = null;
-        startTime = performance.now();
-        lastFrame = startTime;
         hitPoseUntil = 0;
         hitPoseStart = 0;
         projectiles.length = 0;
         debris.length = 0;
         particles = [];
+      }
+
+      function beginGameplay() {
+        state = 'playing';
+        startTime = performance.now();
+        lastFrame = startTime;
+        hide(readyOverlay);
+      }
+
+      function startGame() {
+        if (state === 'countdown') return;
+
+        state = 'countdown';
+        resetRoundObjects();
         hide(startOverlay);
         hide(nameOverlay);
         hide(rankOverlay);
+        show(readyOverlay);
+        playIntroThenBgm();
+        playReadySound();
+
+        if (readyTimerId) window.clearTimeout(readyTimerId);
+        readyTimerId = window.setTimeout(() => {
+          beginGameplay();
+        }, 1150);
       }
 
       function endGame() {
         if (state !== 'playing') return;
         state = 'ended';
         finalScore = score;
+        playEndSound();
         finalScoreText.textContent = `${finalScore}개`;
         nameInput.value = '';
         show(nameOverlay);
@@ -591,6 +848,7 @@
         hitPoseStart = now;
         hitPoseUntil = now + (CROP.hitSprite.frames * CROP.hitSprite.frameMs);
         resetHitGif();
+        playRandomHitVoice();
 
         spawnBurst(egg.tx, egg.ty);
 
@@ -787,7 +1045,7 @@
             : GAME_SECONDS;
 
         drawPill(48, 44, 210, 62, `⏱ ${remaining.toFixed(1)}초`);
-        drawPill(W - 260, 44, 212, 62, `🥚 ${score}개`);
+        drawPill(W - 260, 112, 212, 62, `🥚 ${score}개`);
       }
 
       function drawPill(x, y, w, h, text) {
