@@ -324,6 +324,10 @@
 
     const GAME_SECONDS = 30;
     const FLOOR_Y = 650;
+    // 너무 많은 바닥 껍질이 새 이펙트를 바로 지워버리지 않도록,
+    // 오래 멈춘 조각부터 정리합니다. 새로 깨지는 조각은 항상 보존됩니다.
+    const MAX_DEBRIS = 900;
+    const DEBRIS_SAFE_MS = 1300;
     const ASSET = './assets/';
     const SOUND = './assets/sounds/';
 
@@ -707,6 +711,32 @@
         frameOffset: Math.floor(rand(0, PEELED_SPRITE.frames)),
         settleFrame: 0
       });
+
+      trimDebris(false);
+    }
+
+    function trimDebris(force) {
+      if (debris.length <= MAX_DEBRIS && !force) return;
+
+      // 1순위: 이미 바닥에 멈춘 오래된 조각부터 제거합니다.
+      for (let i = 0; i < debris.length && debris.length > MAX_DEBRIS; ) {
+        const d = debris[i];
+        if (d.settled && now - d.born > DEBRIS_SAFE_MS) {
+          debris.splice(i, 1);
+        } else {
+          i += 1;
+        }
+      }
+
+      // 그래도 너무 많으면, 최근에 생긴 이펙트는 남기고 오래된 조각부터 제거합니다.
+      for (let i = 0; i < debris.length && debris.length > MAX_DEBRIS; ) {
+        const d = debris[i];
+        if (now - d.born > DEBRIS_SAFE_MS) {
+          debris.splice(i, 1);
+        } else {
+          i += 1;
+        }
+      }
     }
 
     function update(dt) {
@@ -761,10 +791,12 @@
           }
         }
 
-        if (d.x < -220 || d.x > W + 220 || d.y > H + 220 || debris.length > 220) {
+        if (d.x < -260 || d.x > W + 260 || d.y > H + 260) {
           debris.splice(i, 1);
         }
       }
+
+      trimDebris(false);
 
       for (let i = impactMarks.length - 1; i >= 0; i--) {
         const b = impactMarks[i];
