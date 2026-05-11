@@ -234,8 +234,8 @@
 
   <section class="overlay" id="startOverlay" aria-live="polite">
     <div class="card">
-      <div class="badge">🥚 30초 동안 깨라!</div>
-      <h1>아테 이마에 계란깨기!</h1>
+      <div class="badge">🥚 30초 클릭 챌린지</div>
+      <h1>계란 이마 챌린지</h1>
       <p>캐릭터를 클릭하면 계란이 날아가 이마에 부딪힙니다.<br />30초 동안 최대한 많이 맞혀보세요.</p>
       <button id="startBtn" type="button">게임 시작</button>
       <p class="subtle" id="loadStatus">리소스 불러오는 중...</p>
@@ -361,6 +361,7 @@
       const ASSETS = {
         idle: 'assets/기본자세.png',
         hit: 'assets/계란 맞는 모습.gif',
+        hitSprite: 'assets/계란 맞는 모습.sprite.png',
         eggTop: 'assets/계란 안깐거 - 윗부분.png',
         eggBottom: 'assets/계란 안깐거 - 아래부분.png',
         peeled: 'assets/깐계란.gif'
@@ -368,6 +369,7 @@
 
       const CROP = {
         character: { sx: 440, sy: 120, sw: 1960, sh: 1840 },
+        hitSprite: { frameW: 520, frameH: 488, frames: 10, frameMs: 40 },
         egg: { sx: 0, sy: 0, sw: 500, sh: 500 }
       };
 
@@ -393,6 +395,7 @@
       let lastFrame = performance.now();
       let now = performance.now();
       let hitPoseUntil = 0;
+      let hitPoseStart = 0;
       let finalScore = 0;
       let myRankId = null;
       let particles = [];
@@ -509,6 +512,7 @@
         startTime = performance.now();
         lastFrame = startTime;
         hitPoseUntil = 0;
+        hitPoseStart = 0;
         projectiles.length = 0;
         debris.length = 0;
         particles = [];
@@ -578,7 +582,10 @@
       }
 
       function onEggImpact(egg) {
-        hitPoseUntil = now + 460;
+        // Canvas에서 GIF가 첫 프레임으로 고정되는 브라우저 이슈를 피하기 위해
+        // GIF에서 추출한 스프라이트를 수동 프레임 애니메이션으로 재생합니다.
+        hitPoseStart = now;
+        hitPoseUntil = now + (CROP.hitSprite.frames * CROP.hitSprite.frameMs);
         resetHitGif();
 
         spawnBurst(egg.tx, egg.ty);
@@ -798,9 +805,9 @@
       }
 
       function drawCharacter() {
-        const useHit = now < hitPoseUntil && loaded.hit && !failed.hit;
-        const img = useHit ? images.hit : images.idle;
-        const hasImage = img && img.complete && (loaded[useHit ? 'hit' : 'idle'] || useHit);
+        const isHitPose = now < hitPoseUntil;
+        const idleImg = images.idle;
+        const gifImg = images.hit;
 
         ctx.save();
 
@@ -809,20 +816,45 @@
         ctx.ellipse(character.x, FLOOR_Y + 16, 240, 42, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        if (hasImage) {
+        if (isHitPose && images.hitSprite && images.hitSprite.complete && loaded.hitSprite && !failed.hitSprite) {
+          const elapsed = Math.max(0, now - hitPoseStart);
+          const frameIndex = Math.min(
+            CROP.hitSprite.frames - 1,
+            Math.floor(elapsed / CROP.hitSprite.frameMs)
+          );
+
           ctx.drawImage(
-            img,
-            CROP.character.sx,
-            CROP.character.sy,
-            CROP.character.sw,
-            CROP.character.sh,
+            images.hitSprite,
+            frameIndex * CROP.hitSprite.frameW,
+            0,
+            CROP.hitSprite.frameW,
+            CROP.hitSprite.frameH,
             character.x - character.w / 2,
             character.y - character.h / 2,
             character.w,
             character.h
           );
         } else {
-          drawFallbackCharacter();
+          const useGifFallback = isHitPose && gifImg && gifImg.complete && loaded.hit && !failed.hit;
+          const img = useGifFallback ? gifImg : idleImg;
+          const key = useGifFallback ? 'hit' : 'idle';
+          const hasImage = img && img.complete && loaded[key] && !failed[key];
+
+          if (hasImage) {
+            ctx.drawImage(
+              img,
+              CROP.character.sx,
+              CROP.character.sy,
+              CROP.character.sw,
+              CROP.character.sh,
+              character.x - character.w / 2,
+              character.y - character.h / 2,
+              character.w,
+              character.h
+            );
+          } else {
+            drawFallbackCharacter();
+          }
         }
 
         ctx.restore();
@@ -887,8 +919,10 @@
         ctx.translate(x, y);
         ctx.rotate(rot);
 
-        drawAssetImage('eggBottom', -size / 2, -size / 2 + size * 0.05, size, size);
-        drawAssetImage('eggTop', -size / 2, -size / 2 - size * 0.04, size, size);
+        // 두 껍질 이미지는 같은 500x500 투명 캔버스 기준으로 제작되어 있으므로
+        // 같은 위치/크기로 겹쳐 그려야 유격 없이 완전한 계란이 됩니다.
+        drawAssetImage('eggBottom', -size / 2, -size / 2, size, size);
+        drawAssetImage('eggTop', -size / 2, -size / 2, size, size);
 
         ctx.restore();
       }
