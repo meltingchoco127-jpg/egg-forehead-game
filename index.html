@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>계란 이마 챌린지</title>
+  <meta name="description" content="30초 동안 캐릭터에게 계란을 맞히는 클릭형 웹 게임" />
+  <style>
+    :root {
+      --ink: #3b2a1c;
+      --paper: rgba(255, 255, 255, 0.86);
+      --orange: #ffad34;
+      --orange-deep: #e87717;
+      --mint: #8ee7d0;
+      --yellow: #ffe277;
+      --shadow: rgba(111, 68, 25, 0.24);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 16%, rgba(255,255,255,.88), rgba(255,255,255,0) 26%),
+        radial-gradient(circle at 82% 18%, rgba(255,241,157,.86), rgba(255,241,157,0) 24%),
+        linear-gradient(145deg, #fff4bd 0%, #ffd2a1 42%, #a8efd9 100%);
+      user-select: none;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    canvas {
+      display: block;
+      width: min(100vw, 1280px);
+      height: auto;
+      max-height: 100vh;
+      aspect-ratio: 16 / 9;
+      border-radius: clamp(0px, 2.2vw, 30px);
+      box-shadow: 0 22px 68px var(--shadow);
+      touch-action: manipulation;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      pointer-events: none;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .card {
+      width: min(92vw, 500px);
+      padding: 30px 28px 28px;
+      border-radius: 30px;
+      text-align: center;
+      background: var(--paper);
+      border: 2px solid rgba(255,255,255,.72);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 22px 70px rgba(105, 63, 20, .20);
+      pointer-events: auto;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 900;
+      color: #80400e;
+      background: #fff2bd;
+      border: 2px solid rgba(255, 186, 66, .48);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 6vw, 50px);
+      line-height: 1.04;
+      letter-spacing: -0.055em;
+    }
+
+    p {
+      margin: 12px 0 20px;
+      font-size: 16px;
+      line-height: 1.56;
+      word-break: keep-all;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 16px 30px;
+      min-width: 170px;
+      font-size: 20px;
+      font-weight: 950;
+      color: white;
+      background: linear-gradient(180deg, var(--orange), var(--orange-deep));
+      box-shadow: 0 11px 0 #994610, 0 22px 36px rgba(232, 119, 23, .24);
+      cursor: pointer;
+      transition: transform .1s ease, box-shadow .1s ease, filter .15s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.04);
+    }
+
+    button:active {
+      transform: translateY(7px);
+      box-shadow: 0 4px 0 #994610, 0 12px 20px rgba(232, 119, 23, .22);
+    }
+
+    button.secondary {
+      margin-top: 10px;
+      color: #784219;
+      background: linear-gradient(180deg, #fff4c7, #ffd46e);
+      box-shadow: 0 9px 0 #d69523, 0 18px 28px rgba(214, 149, 35, .22);
+    }
+
+    input {
+      width: 100%;
+      height: 54px;
+      margin: 8px 0 14px;
+      padding: 0 16px;
+      border: 2px solid rgba(70, 45, 25, .18);
+      border-radius: 17px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 18px;
+      font-weight: 850;
+      text-align: center;
+    }
+
+    input:focus {
+      border-color: var(--orange-deep);
+      box-shadow: 0 0 0 4px rgba(255, 173, 52, .18);
+    }
+
+    .scoreline {
+      margin: 10px 0 14px;
+      font-size: 26px;
+      font-weight: 950;
+      color: #e46e12;
+    }
+
+    .rank-list {
+      list-style: none;
+      padding: 0;
+      margin: 18px 0 8px;
+      max-height: min(46vh, 330px);
+      overflow: auto;
+      text-align: left;
+    }
+
+    .rank-list li {
+      display: grid;
+      grid-template-columns: 46px 1fr 74px;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+      padding: 12px 14px;
+      border-radius: 17px;
+      background: rgba(255,255,255,.72);
+      font-weight: 900;
+    }
+
+    .rank-list li.me {
+      background: #fff2b8;
+      outline: 3px solid rgba(255, 174, 52, .78);
+    }
+
+    .rank-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rank-score {
+      text-align: right;
+      color: #e46e12;
+    }
+
+    .subtle {
+      margin: 15px 0 0;
+      font-size: 13px;
+      opacity: .66;
+    }
+
+    @media (max-width: 520px) {
+      .card {
+        padding: 26px 20px 24px;
+      }
+
+      p {
+        font-size: 15px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" width="1280" height="720" aria-label="계란 이마 챌린지 게임 화면"></canvas>
+  </main>
+
+  <section class="overlay" id="startOverlay" aria-live="polite">
+    <div class="card">
+      <div class="badge">🥚 30초 클릭 챌린지</div>
+      <h1>계란 이마 챌린지</h1>
+      <p>캐릭터를 클릭하면 계란이 날아가 이마에 부딪힙니다.<br />30초 동안 최대한 많이 맞혀보세요.</p>
+      <button id="startBtn" type="button">게임 시작</button>
+      <p class="subtle" id="loadStatus">리소스 불러오는 중...</p>
+    </div>
+  </section>
+
+  <section class="overlay hidden" id="nameOverlay" aria-live="polite">
+    <div class="card">
+      <div class="badge">⏱️ 게임 종료</div>
+      <h1>기록 완료!</h1>
+      <div class="scoreline" id="finalScoreText">0개</div>
+      <input id="nameInput" maxlength="12" placeholder="이름을 입력하세요" autocomplete="off" />
+      <button id="saveRankBtn" type="button">공용 랭킹 등록</button>
+      <p class="subtle">Firebase 설정 후 모든 사용자가 같은 TOP 10 랭킹을 공유합니다.</p>
+    </div>
+  </section>
+
+  <section class="overlay hidden" id="rankOverlay" aria-live="polite">
+    <div class="card">
+      <div class="badge">🏆 TOP 10</div>
+      <h1>랭킹</h1>
+      <ol class="rank-list" id="rankList"></ol>
+      <button id="againBtn" type="button">다시 하기</button>
+      <button id="resetRankBtn" class="secondary" type="button">랭킹 새로고침</button>
+      <p class="subtle">Firebase 미설정 상태에서는 테스트용 로컬 랭킹으로 동작합니다.</p>
+    </div>
+  </section>
+
+  <script src="./firebase-config.js"></script>
+  <script>
+    (() => {
+      'use strict';
+
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+
+      const W = canvas.width;
+      const H = canvas.height;
+      const GAME_SECONDS = 30;
+      const FLOOR_Y = 622;
+      const LOCAL_RANK_KEY = 'egg-forehead-game-rank-v2-local-fallback';
+      const FIREBASE_SDK_VERSION = '10.12.4';
+      const LEADERBOARD_PATH = ['leaderboards', 'egg-forehead-game-v1', 'scores'];
+
+      let leaderboardMode = 'local';
+      let leaderboardError = null;
+      let firebaseApi = null;
+
+      const startOverlay = document.getElementById('startOverlay');
+      const nameOverlay = document.getElementById('nameOverlay');
+      const rankOverlay = document.getElementById('rankOverlay');
+      const startBtn = document.getElementById('startBtn');
+      const saveRankBtn = document.getElementById('saveRankBtn');
+      const againBtn = document.getElementById('againBtn');
+      const resetRankBtn = document.getElementById('resetRankBtn');
+      const nameInput = document.getElementById('nameInput');
+      const finalScoreText = document.getElementById('finalScoreText');
+      const rankList = document.getElementById('rankList');
+      const loadStatus = document.getElementById('loadStatus');
+
+      function hasFirebaseConfig() {
+        const cfg = window.EGG_GAME_FIREBASE_CONFIG;
+        return Boolean(
+          cfg &&
+          typeof cfg.apiKey === 'string' &&
+          typeof cfg.projectId === 'string' &&
+          cfg.apiKey &&
+          cfg.projectId &&
+          !cfg.apiKey.includes('YOUR_') &&
+          !cfg.projectId.includes('YOUR_')
+        );
+      }
+
+      async function initLeaderboard() {
+        if (!hasFirebaseConfig()) {
+          leaderboardMode = 'local';
+          leaderboardError = 'Firebase 설정 전';
+          updateLoadStatus();
+          return;
+        }
+
+        try {
+          const appModuleUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`;
+          const firestoreModuleUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`;
+          const [{ initializeApp }, firestore] = await Promise.all([
+            import(appModuleUrl),
+            import(firestoreModuleUrl)
+          ]);
+
+          const app = initializeApp(window.EGG_GAME_FIREBASE_CONFIG);
+          const db = firestore.getFirestore(app);
+
+          firebaseApi = {
+            db,
+            collection: firestore.collection,
+            addDoc: firestore.addDoc,
+            getDocs: firestore.getDocs,
+            query: firestore.query,
+            orderBy: firestore.orderBy,
+            limit: firestore.limit,
+            serverTimestamp: firestore.serverTimestamp
+          };
+
+          leaderboardMode = 'remote';
+          leaderboardError = null;
+        } catch (error) {
+          console.warn('공용 랭킹 연결 실패. 로컬 테스트 랭킹으로 전환합니다.', error);
+          leaderboardMode = 'local';
+          leaderboardError = error;
+        }
+
+        updateLoadStatus();
+      }
+
+      let leaderboardReady = Promise.resolve();
+
+      function rankModeText() {
+        if (leaderboardMode === 'remote') return '공용 랭킹 연결 완료';
+        if (leaderboardError) return 'Firebase 설정 전 또는 연결 실패: 로컬 테스트 랭킹';
+        return '랭킹 연결 확인 중...';
+      }
+
+      const ASSETS = {
+        idle: 'assets/기본자세.png',
+        hit: 'assets/계란 맞는 모습.gif',
+        eggTop: 'assets/계란 안깐거 - 윗부분.png',
+        eggBottom: 'assets/계란 안깐거 - 아래부분.png',
+        peeled: 'assets/깐계란.gif'
+      };
+
+      const CROP = {
+        character: { sx: 440, sy: 120, sw: 1960, sh: 1840 },
+        egg: { sx: 0, sy: 0, sw: 500, sh: 500 }
+      };
+
+      const character = {
+        x: W / 2,
+        y: 406,
+        w: 520,
+        h: 488,
+        foreheadX: 0,
+        foreheadY: -164,
+        clickPadX: 250,
+        clickPadY: 236
+      };
+
+      const images = {};
+      const loaded = {};
+      const failed = {};
+      let assetReadyCount = 0;
+
+      let state = 'ready';
+      let score = 0;
+      let startTime = 0;
+      let lastFrame = performance.now();
+      let now = performance.now();
+      let hitPoseUntil = 0;
+      let finalScore = 0;
+      let myRankId = null;
+      let particles = [];
+
+      const projectiles = [];
+      const debris = [];
+
+      function rand(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function hide(el) {
+        el.classList.add('hidden');
+      }
+
+      function show(el) {
+        el.classList.remove('hidden');
+      }
+
+      function assetUrl(path) {
+        return encodeURI(path);
+      }
+
+      function loadImage(key, src) {
+        const img = new Image();
+        img.onload = () => {
+          loaded[key] = true;
+          failed[key] = false;
+          assetReadyCount++;
+          updateLoadStatus();
+        };
+        img.onerror = () => {
+          loaded[key] = false;
+          failed[key] = true;
+          assetReadyCount++;
+          updateLoadStatus();
+        };
+        img.src = assetUrl(src);
+        images[key] = img;
+      }
+
+      function updateLoadStatus() {
+        const total = Object.keys(ASSETS).length;
+        const failedCount = Object.values(failed).filter(Boolean).length;
+
+        if (assetReadyCount < total) {
+          loadStatus.textContent = `리소스 불러오는 중... (${assetReadyCount}/${total})`;
+          return;
+        }
+
+        if (failedCount > 0) {
+          loadStatus.textContent = `일부 리소스를 찾지 못했습니다. assets 폴더의 파일명을 확인하세요.`;
+          return;
+        }
+
+        loadStatus.textContent = `준비 완료! ${rankModeText()}`;
+      }
+
+      Object.entries(ASSETS).forEach(([key, src]) => loadImage(key, src));
+      leaderboardReady = initLeaderboard();
+
+      function resetHitGif() {
+        if (failed.hit) return;
+        const img = new Image();
+        img.onload = () => {
+          images.hit = img;
+          loaded.hit = true;
+        };
+        img.onerror = () => {
+          failed.hit = true;
+          loaded.hit = false;
+        };
+        img.src = assetUrl(ASSETS.hit) + '?restart=' + Date.now() + Math.random().toString(16).slice(2);
+      }
+
+      function getForeheadPoint() {
+        return {
+          x: character.x + character.foreheadX,
+          y: character.y + character.foreheadY
+        };
+      }
+
+      function getPointer(evt) {
+        const rect = canvas.getBoundingClientRect();
+        const source = evt.touches ? evt.touches[0] : evt;
+        return {
+          x: (source.clientX - rect.left) * W / rect.width,
+          y: (source.clientY - rect.top) * H / rect.height
+        };
+      }
+
+      function isCharacterHit(x, y) {
+        return (
+          x >= character.x - character.clickPadX &&
+          x <= character.x + character.clickPadX &&
+          y >= character.y - character.clickPadY &&
+          y <= character.y + character.clickPadY
+        );
+      }
+
+      function startGame() {
+        state = 'playing';
+        score = 0;
+        finalScore = 0;
+        myRankId = null;
+        startTime = performance.now();
+        lastFrame = startTime;
+        hitPoseUntil = 0;
+        projectiles.length = 0;
+        debris.length = 0;
+        particles = [];
+        hide(startOverlay);
+        hide(nameOverlay);
+        hide(rankOverlay);
+      }
+
+      function endGame() {
+        if (state !== 'playing') return;
+        state = 'ended';
+        finalScore = score;
+        finalScoreText.textContent = `${finalScore}개`;
+        nameInput.value = '';
+        show(nameOverlay);
+        window.setTimeout(() => nameInput.focus(), 80);
+      }
+
+      function onCanvasPointerDown(evt) {
+        if (state !== 'playing') return;
+        evt.preventDefault();
+        const p = getPointer(evt);
+        if (!isCharacterHit(p.x, p.y)) return;
+
+        score += 1;
+        spawnEgg();
+      }
+
+      canvas.addEventListener('pointerdown', onCanvasPointerDown, { passive: false });
+      startBtn.addEventListener('click', startGame);
+      againBtn.addEventListener('click', startGame);
+
+      saveRankBtn.addEventListener('click', () => {
+        saveRank();
+      });
+
+      nameInput.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Enter') saveRank();
+      });
+
+      resetRankBtn.addEventListener('click', () => {
+        renderRanking();
+      });
+
+      function spawnEgg() {
+        const target = getForeheadPoint();
+        const fromLeft = Math.random() < 0.5;
+        const sx = fromLeft ? rand(80, 230) : rand(W - 230, W - 80);
+        const sy = rand(FLOOR_Y - 44, FLOOR_Y + 8);
+        const tx = target.x + rand(-18, 18);
+        const ty = target.y + rand(-12, 16);
+
+        projectiles.push({
+          sx,
+          sy,
+          tx,
+          ty,
+          x: sx,
+          y: sy,
+          t: 0,
+          duration: rand(0.22, 0.38),
+          arc: rand(86, 150),
+          size: rand(70, 86),
+          rot: rand(-0.6, 0.6),
+          spin: rand(-9, 9)
+        });
+      }
+
+      function onEggImpact(egg) {
+        hitPoseUntil = now + 460;
+        resetHitGif();
+
+        spawnBurst(egg.tx, egg.ty);
+
+        debris.push(makeDebris('top', egg.tx, egg.ty, {
+          vx: rand(-450, 160),
+          vy: rand(-760, -440),
+          size: egg.size * rand(0.9, 1.1),
+          bounce: rand(0.22, 0.38)
+        }));
+
+        debris.push(makeDebris('bottom', egg.tx, egg.ty + 4, {
+          vx: rand(-130, 470),
+          vy: rand(-690, -390),
+          size: egg.size * rand(0.9, 1.12),
+          bounce: rand(0.18, 0.34)
+        }));
+
+        debris.push(makeDebris('peeled', egg.tx + rand(-8, 8), egg.ty - 6, {
+          vx: rand(-420, 420),
+          vy: rand(-880, -560),
+          size: egg.size * rand(0.72, 0.9),
+          bounce: rand(0.42, 0.62)
+        }));
+      }
+
+      function makeDebris(type, x, y, options) {
+        return {
+          type,
+          x,
+          y,
+          vx: options.vx,
+          vy: options.vy,
+          size: options.size,
+          bounce: options.bounce,
+          rot: rand(-1.5, 1.5),
+          vr: rand(-9, 9),
+          floor: FLOOR_Y + rand(-12, 14),
+          age: 0,
+          settled: false
+        };
+      }
+
+      function spawnBurst(x, y) {
+        for (let i = 0; i < 16; i++) {
+          particles.push({
+            x,
+            y,
+            vx: rand(-210, 210),
+            vy: rand(-260, 90),
+            r: rand(3, 8),
+            life: rand(0.18, 0.34),
+            age: 0
+          });
+        }
+      }
+
+      function update(dt) {
+        now = performance.now();
+
+        if (state === 'playing') {
+          const elapsed = (now - startTime) / 1000;
+          if (elapsed >= GAME_SECONDS) {
+            endGame();
+          }
+        }
+
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          const egg = projectiles[i];
+          egg.t += dt / egg.duration;
+
+          const t = clamp(egg.t, 0, 1);
+          const e = easeOutCubic(t);
+          egg.x = egg.sx + (egg.tx - egg.sx) * e;
+          egg.y = egg.sy + (egg.ty - egg.sy) * e - Math.sin(Math.PI * t) * egg.arc;
+          egg.rot += egg.spin * dt;
+
+          if (egg.t >= 1) {
+            projectiles.splice(i, 1);
+            onEggImpact(egg);
+          }
+        }
+
+        const gravity = 1740;
+        for (let i = debris.length - 1; i >= 0; i--) {
+          const item = debris[i];
+          item.age += dt;
+
+          if (!item.settled) {
+            item.vy += gravity * dt;
+            item.x += item.vx * dt;
+            item.y += item.vy * dt;
+            item.rot += item.vr * dt;
+
+            if (item.y + item.size * 0.34 >= item.floor) {
+              item.y = item.floor - item.size * 0.34;
+              item.vy = -Math.abs(item.vy) * item.bounce;
+              item.vx *= 0.70;
+              item.vr *= 0.68;
+
+              if (Math.abs(item.vy) < 95) {
+                item.vy = 0;
+                item.vx = 0;
+                item.vr = 0;
+                item.settled = true;
+              }
+            }
+          }
+
+          if (item.x < -220 || item.x > W + 220 || item.y > H + 240 || item.age > 18 || debris.length > 240) {
+            debris.splice(i, 1);
+          }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.age += dt;
+          p.vy += 680 * dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+
+          if (p.age >= p.life) particles.splice(i, 1);
+        }
+      }
+
+      function draw() {
+        drawBackground();
+        drawHud();
+        drawDebris(true);
+        drawCharacter();
+        drawProjectiles();
+        drawParticles();
+        drawDebris(false);
+        if (state === 'ready') drawAimHint();
+      }
+
+      function roundRect(x, y, w, h, r) {
+        const rr = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+      }
+
+      function drawBackground() {
+        ctx.clearRect(0, 0, W, H);
+
+        const gradient = ctx.createLinearGradient(0, 0, W, H);
+        gradient.addColorStop(0, '#fff4bc');
+        gradient.addColorStop(0.48, '#ffd0a2');
+        gradient.addColorStop(1, '#9debd7');
+        ctx.fillStyle = gradient;
+        roundRect(26, 26, W - 52, H - 52, 36);
+        ctx.fill();
+
+        ctx.save();
+        ctx.globalAlpha = 0.26;
+        const blobs = [
+          [152, 108, 58, 38, '#fff'], [1110, 104, 74, 46, '#fff4a2'],
+          [226, 540, 82, 52, '#fff'], [1058, 538, 92, 60, '#fff'],
+          [350, 170, 42, 26, '#ffe78a'], [923, 236, 48, 32, '#fff'],
+          [188, 285, 34, 22, '#fff3a6'], [1132, 332, 48, 32, '#ffe997']
+        ];
+        for (const [x, y, rx, ry, color] of blobs) {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, .42)';
+        ctx.beginPath();
+        ctx.ellipse(W / 2, FLOOR_Y + 26, 430, 62, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(123, 78, 32, .13)';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(82, FLOOR_Y + 11);
+        ctx.bezierCurveTo(350, FLOOR_Y - 22, 880, FLOOR_Y + 52, 1198, FLOOR_Y + 4);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawHud() {
+        const remaining = state === 'playing'
+          ? Math.max(0, GAME_SECONDS - (now - startTime) / 1000)
+          : state === 'ended'
+            ? 0
+            : GAME_SECONDS;
+
+        drawPill(48, 44, 210, 62, `⏱ ${remaining.toFixed(1)}초`);
+        drawPill(W - 260, 44, 212, 62, `🥚 ${score}개`);
+      }
+
+      function drawPill(x, y, w, h, text) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(92, 54, 18, .18)';
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 8;
+        ctx.fillStyle = 'rgba(255,255,255,.84)';
+        roundRect(x, y, w, h, 24);
+        ctx.fill();
+
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = '#3b2a1c';
+        ctx.font = '900 28px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x + w / 2, y + h / 2 + 1);
+        ctx.restore();
+      }
+
+      function drawCharacter() {
+        const useHit = now < hitPoseUntil && loaded.hit && !failed.hit;
+        const img = useHit ? images.hit : images.idle;
+        const hasImage = img && img.complete && (loaded[useHit ? 'hit' : 'idle'] || useHit);
+
+        ctx.save();
+
+        ctx.fillStyle = 'rgba(97, 53, 16, .16)';
+        ctx.beginPath();
+        ctx.ellipse(character.x, FLOOR_Y + 16, 240, 42, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (hasImage) {
+          ctx.drawImage(
+            img,
+            CROP.character.sx,
+            CROP.character.sy,
+            CROP.character.sw,
+            CROP.character.sh,
+            character.x - character.w / 2,
+            character.y - character.h / 2,
+            character.w,
+            character.h
+          );
+        } else {
+          drawFallbackCharacter();
+        }
+
+        ctx.restore();
+      }
+
+      function drawFallbackCharacter() {
+        ctx.save();
+        ctx.translate(character.x, character.y);
+        ctx.fillStyle = '#ffd64d';
+        ctx.beginPath();
+        ctx.ellipse(0, 74, 185, 210, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#fff6dc';
+        roundRect(-105, -54, 210, 270, 44);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffe4e7';
+        ctx.beginPath();
+        ctx.ellipse(-64, -20, 38, 25, -0.18, 0, Math.PI * 2);
+        ctx.ellipse(64, -20, 38, 25, 0.18, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#26375d';
+        ctx.beginPath();
+        ctx.arc(-44, -62, 15, 0, Math.PI * 2);
+        ctx.arc(44, -62, 15, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ff7297';
+        ctx.beginPath();
+        ctx.ellipse(0, -42, 25, 38, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#f4f4ee';
+        ctx.beginPath();
+        ctx.ellipse(0, -128, 130, 62, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawAimHint() {
+        const p = getForeheadPoint();
+        ctx.save();
+        ctx.globalAlpha = 0.36 + Math.sin(now / 220) * 0.08;
+        ctx.strokeStyle = '#e87717';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 34, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawProjectiles() {
+        for (const egg of projectiles) {
+          drawWholeEgg(egg.x, egg.y, egg.size, egg.rot);
+        }
+      }
+
+      function drawWholeEgg(x, y, size, rot) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rot);
+
+        drawAssetImage('eggBottom', -size / 2, -size / 2 + size * 0.05, size, size);
+        drawAssetImage('eggTop', -size / 2, -size / 2 - size * 0.04, size, size);
+
+        ctx.restore();
+      }
+
+      function drawDebris(behindCharacter) {
+        for (const item of debris) {
+          const shouldBeBehind = item.y < character.y + 60;
+          if (behindCharacter !== shouldBeBehind) continue;
+
+          ctx.save();
+          ctx.translate(item.x, item.y);
+          ctx.rotate(item.rot);
+
+          if (item.type === 'top') {
+            drawAssetImage('eggTop', -item.size / 2, -item.size / 2, item.size, item.size);
+          } else if (item.type === 'bottom') {
+            drawAssetImage('eggBottom', -item.size / 2, -item.size / 2, item.size, item.size);
+          } else {
+            drawAssetImage('peeled', -item.size / 2, -item.size / 2, item.size, item.size);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      function drawAssetImage(key, x, y, w, h) {
+        const img = images[key];
+        if (img && img.complete && loaded[key] && !failed[key]) {
+          ctx.drawImage(img, CROP.egg.sx, CROP.egg.sy, CROP.egg.sw, CROP.egg.sh, x, y, w, h);
+          return;
+        }
+
+        ctx.save();
+        ctx.fillStyle = key === 'peeled' ? '#f7c48d' : '#d98e63';
+        ctx.strokeStyle = '#75443d';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2, y + h / 2, w * 0.34, h * 0.39, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawParticles() {
+        ctx.save();
+        for (const p of particles) {
+          const alpha = 1 - p.age / p.life;
+          ctx.globalAlpha = Math.max(0, alpha);
+          ctx.fillStyle = '#fff2b8';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function getLocalRanks() {
+        try {
+          const raw = localStorage.getItem(LOCAL_RANK_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(parsed)) return [];
+          return parsed
+            .filter((r) => r && typeof r.name === 'string' && Number.isFinite(r.score))
+            .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
+            .slice(0, 30);
+        } catch {
+          return [];
+        }
+      }
+
+      function saveLocalRank(name, scoreValue, id) {
+        const ranks = getLocalRanks();
+        ranks.push({
+          id,
+          name,
+          score: scoreValue,
+          createdAt: Date.now()
+        });
+
+        const sorted = ranks
+          .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
+          .slice(0, 30);
+
+        localStorage.setItem(LOCAL_RANK_KEY, JSON.stringify(sorted));
+      }
+
+      function scoresCollection() {
+        return firebaseApi.collection(firebaseApi.db, ...LEADERBOARD_PATH);
+      }
+
+      function normalizeRemoteRank(docSnap) {
+        const data = docSnap.data();
+        const createdAt = data.createdAt && typeof data.createdAt.toMillis === 'function'
+          ? data.createdAt.toMillis()
+          : 0;
+
+        return {
+          id: docSnap.id,
+          name: typeof data.name === 'string' ? data.name : '익명',
+          score: Number.isFinite(data.score) ? data.score : 0,
+          createdAt
+        };
+      }
+
+      async function getRanks() {
+        await leaderboardReady;
+
+        if (leaderboardMode === 'remote' && firebaseApi) {
+          try {
+            const q = firebaseApi.query(
+              scoresCollection(),
+              firebaseApi.orderBy('score', 'desc'),
+              firebaseApi.limit(30)
+            );
+            const snapshot = await firebaseApi.getDocs(q);
+            return snapshot.docs
+              .map(normalizeRemoteRank)
+              .filter((r) => r && typeof r.name === 'string' && Number.isFinite(r.score))
+              .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
+              .slice(0, 10);
+          } catch (error) {
+            console.warn('공용 랭킹을 불러오지 못했습니다. 로컬 테스트 랭킹을 표시합니다.', error);
+            leaderboardMode = 'local';
+            leaderboardError = error;
+            updateLoadStatus();
+          }
+        }
+
+        return getLocalRanks().slice(0, 10);
+      }
+
+      async function saveRank() {
+        const safeName = nameInput.value.trim().replace(/[<>]/g, '').slice(0, 12) || '익명';
+        myRankId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+        saveRankBtn.disabled = true;
+        saveRankBtn.textContent = '등록 중...';
+
+        try {
+          await leaderboardReady;
+
+          if (leaderboardMode === 'remote' && firebaseApi) {
+            const docRef = await firebaseApi.addDoc(scoresCollection(), {
+              name: safeName,
+              score: finalScore,
+              durationSec: GAME_SECONDS,
+              createdAt: firebaseApi.serverTimestamp()
+            });
+            myRankId = docRef.id;
+          } else {
+            saveLocalRank(safeName, finalScore, myRankId);
+          }
+
+          hide(nameOverlay);
+          show(rankOverlay);
+          await renderRanking();
+        } catch (error) {
+          console.warn('랭킹 저장 실패. 로컬 테스트 랭킹에 저장합니다.', error);
+          leaderboardMode = 'local';
+          leaderboardError = error;
+          saveLocalRank(safeName, finalScore, myRankId);
+
+          hide(nameOverlay);
+          show(rankOverlay);
+          await renderRanking();
+
+          window.alert('공용 랭킹 저장에 실패해 이 브라우저의 테스트 랭킹에 임시 저장했습니다. Firebase 설정과 Firestore 규칙을 확인해 주세요.');
+        } finally {
+          saveRankBtn.disabled = false;
+          saveRankBtn.textContent = '공용 랭킹 등록';
+        }
+      }
+
+      async function renderRanking() {
+        rankList.innerHTML = '<li><span>-</span><span class="rank-name">랭킹 불러오는 중...</span><span class="rank-score">-</span></li>';
+
+        const ranks = await getRanks();
+        rankList.innerHTML = '';
+
+        if (ranks.length === 0) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span>-</span><span class="rank-name">아직 기록이 없습니다</span><span class="rank-score">0개</span>';
+          rankList.appendChild(li);
+          return;
+        }
+
+        ranks.forEach((rank, index) => {
+          const li = document.createElement('li');
+          if (rank.id === myRankId) li.classList.add('me');
+
+          const no = document.createElement('span');
+          no.textContent = `${index + 1}위`;
+
+          const name = document.createElement('span');
+          name.className = 'rank-name';
+          name.textContent = rank.name;
+
+          const scoreEl = document.createElement('span');
+          scoreEl.className = 'rank-score';
+          scoreEl.textContent = `${rank.score}개`;
+
+          li.append(no, name, scoreEl);
+          rankList.appendChild(li);
+        });
+      }
+
+      function loop(timestamp) {
+        const dt = Math.min(0.05, (timestamp - lastFrame) / 1000 || 0);
+        lastFrame = timestamp;
+
+        update(dt);
+        draw();
+
+        requestAnimationFrame(loop);
+      }
+
+      requestAnimationFrame(loop);
+      updateLoadStatus();
+    })();
+  </script>
+</body>
+</html>
