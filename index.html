@@ -333,7 +333,6 @@
       <div class="scoreline" id="finalScoreText">0개</div>
       <input id="nameInput" maxlength="12" placeholder="이름을 입력하세요" autocomplete="off" />
       <button id="saveRankBtn" type="button">공용 랭킹 등록</button>
-      <p class="subtle">Firebase 설정 후 모든 사용자가 같은 TOP 10 랭킹을 공유합니다.</p>
     </div>
   </section>
 
@@ -457,11 +456,11 @@
         intro: 'assets/sounds/카캇.mp3',
         bgm: 'assets/sounds/Cats on Mars.mp3',
         ready: 'assets/sounds/준비.mp3',
-        end: 'assets/sounds/쯔아아아앗_Vocals.wav',
+        end: 'assets/sounds/쯔아아아앗_Vocals.mp3',
         hitVoices: [
-          'assets/sounds/안됏_Vocals.wav',
-          'assets/sounds/치_Vocals.wav',
-          'assets/sounds/흐에에에_Vocals.wav'
+          'assets/sounds/안됏_Vocals.mp3',
+          'assets/sounds/치_Vocals.mp3',
+          'assets/sounds/흐에에에_Vocals.mp3'
         ]
       };
 
@@ -559,8 +558,10 @@
         if (!el) return Promise.resolve(false);
         const result = el.play();
         if (result && typeof result.catch === 'function') {
-          return result.then(() => true).catch(() => {
-            // 브라우저 자동재생 정책 때문에 사용자 조작 전에는 실패할 수 있습니다.
+          return result.then(() => true).catch((err) => {
+            // 브라우저 자동재생 정책, 파일 경로 오류, 미지원 코덱 등을 확인하기 쉽게 남깁니다.
+            console.warn('[audio play failed]', el.src, err && (err.name || err.message || err));
+            window.__EGG_GAME_LAST_AUDIO_ERROR__ = { src: el.src, error: err };
             return false;
           });
         }
@@ -597,8 +598,15 @@
 
       function playIntroThenBgm() {
         if (!audio.bgmEnabled) return;
-        if (audio.introCompleted || audio.introAttempted) {
+
+        // 이미 오프닝 효과음이 재생된 뒤라면 BGM만 유지합니다.
+        if (audio.introCompleted) {
           startBgm();
+          return;
+        }
+
+        // 오프닝 효과음이 재생 중이면 BGM을 겹쳐 틀지 않고 끝날 때까지 기다립니다.
+        if (audio.introAttempted) {
           return;
         }
 
