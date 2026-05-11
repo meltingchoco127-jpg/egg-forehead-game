@@ -282,7 +282,7 @@
   <section class="overlay hidden" id="nameOverlay" aria-live="polite">
     <div class="card">
       <div class="badge">⏱️ 게임 종료</div>
-      <h1>게임 오버!</h1>
+      <h1>기록 완료!</h1>
       <div class="scoreline" id="finalScoreText">0개</div>
       <input id="nameInput" maxlength="12" placeholder="이름을 입력하세요" autocomplete="off" />
       <button id="saveRankBtn" type="button">랭킹 등록</button>
@@ -1073,19 +1073,30 @@
 
     async function fetchRanks() {
       if (cloud.ready) {
+        // 복합 색인 없이 동작하도록 Firestore에서는 score 단일 정렬만 사용합니다.
+        // 같은 점수의 createdAt 정렬은 브라우저에서 처리합니다.
         const q = cloud.query(
           cloud.collection(cloud.db, 'rankings'),
           cloud.orderBy('score', 'desc'),
-          cloud.orderBy('createdAt', 'asc'),
-          cloud.limit(10)
+          cloud.limit(50)
         );
         const snap = await cloud.getDocs(q);
-        return snap.docs.map((doc, idx) => ({
-          id: doc.id,
-          name: doc.data().name || '익명',
-          score: Number(doc.data().score || 0),
-          idx
-        }));
+        return snap.docs
+          .map((doc) => {
+            const data = doc.data();
+            const createdAt = data.createdAt && typeof data.createdAt.toMillis === 'function'
+              ? data.createdAt.toMillis()
+              : 0;
+
+            return {
+              id: doc.id,
+              name: data.name || '익명',
+              score: Number(data.score || 0),
+              createdAt
+            };
+          })
+          .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
+          .slice(0, 10);
       }
 
       return localRanks().slice(0, 10);
@@ -1123,12 +1134,22 @@
       saveRankBtn.disabled = true;
       try {
         await saveRank(name, score);
-        hide(nameOverlay);
-        show(rankOverlay);
+      } catch (err) {
+        console.error('[rank save failed]', err);
+        say('랭킹 저장에 실패했습니다. Firebase 설정을 확인해 주세요.');
+        saveRankBtn.disabled = false;
+        return;
+      }
+
+      hide(nameOverlay);
+      show(rankOverlay);
+
+      try {
         await renderRanks();
       } catch (err) {
-        console.error(err);
-        say('랭킹 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        console.error('[rank load failed]', err);
+        rankList.innerHTML = '<li style="grid-template-columns:1fr;">랭킹을 불러오지 못했습니다. Firestore 색인 또는 규칙을 확인해 주세요.</li>';
+        say('랭킹 불러오기에 실패했습니다.');
       } finally {
         saveRankBtn.disabled = false;
       }
