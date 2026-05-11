@@ -6,13 +6,11 @@
   <title>계란 이마 챌린지</title>
   <style>
     :root {
-      --ink: #352518;
-      --soft-ink: rgba(53,37,24,.72);
-      --paper: rgba(255, 255, 255, .88);
-      --orange: #ff9f22;
-      --orange-dark: #b95b12;
-      --line: rgba(255,255,255,.72);
-      --shadow: rgba(84, 55, 23, .20);
+      --ink: #392719;
+      --paper: rgba(255,255,255,.88);
+      --orange: #ff9d20;
+      --orange-dark: #ac5214;
+      --shadow: rgba(86, 54, 24, .22);
     }
 
     * { box-sizing: border-box; }
@@ -25,12 +23,12 @@
       color: var(--ink);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
       background:
-        radial-gradient(circle at 18% 16%, rgba(255,255,255,.9), rgba(255,255,255,0) 18%),
-        radial-gradient(circle at 84% 10%, rgba(255,250,195,.72), rgba(255,250,195,0) 18%),
-        linear-gradient(135deg, #ffe7a8 0%, #ffd1a0 44%, #b5eedc 100%);
+        radial-gradient(circle at 16% 17%, rgba(255,255,255,.86), rgba(255,255,255,0) 18%),
+        radial-gradient(circle at 84% 12%, rgba(255,247,194,.62), rgba(255,247,194,0) 18%),
+        linear-gradient(135deg, #ffe7a8 0%, #ffd0a0 45%, #b7eedc 100%);
     }
 
-    #app {
+    #stage {
       position: fixed;
       inset: 0;
       display: grid;
@@ -44,12 +42,11 @@
       height: auto;
       max-height: 100vh;
       aspect-ratio: 16 / 9;
-      background: transparent;
-      border-radius: clamp(0px, 2.2vw, 30px);
-      box-shadow: 0 22px 68px var(--shadow);
+      border-radius: clamp(0px, 2.1vw, 28px);
+      box-shadow: 0 24px 70px rgba(93, 58, 24, .22);
       touch-action: manipulation;
       cursor: pointer;
-      user-select: none;
+      background: transparent;
     }
 
     .overlay {
@@ -57,21 +54,21 @@
       inset: 0;
       display: grid;
       place-items: center;
-      padding: 22px;
+      padding: 20px;
       pointer-events: none;
     }
 
-    .overlay.hidden { display: none; }
+    .hidden { display: none !important; }
 
     .card {
-      width: min(92vw, 520px);
-      padding: 30px 28px 28px;
+      width: min(92vw, 560px);
+      padding: 30px 30px 28px;
       border-radius: 30px;
       text-align: center;
       background: var(--paper);
-      border: 2px solid var(--line);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 22px 70px rgba(105, 63, 20, .20);
+      border: 2px solid rgba(255,255,255,.74);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 22px 70px rgba(104, 66, 26, .20);
       pointer-events: auto;
     }
 
@@ -79,44 +76,41 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 7px;
       padding: 8px 14px;
+      margin-bottom: 13px;
       border-radius: 999px;
       font-weight: 900;
-      color: #80400e;
+      color: #7d3e0c;
       background: #fff2bd;
-      border: 2px solid rgba(255, 186, 66, .48);
-      white-space: nowrap;
+      border: 2px solid rgba(255, 185, 62, .48);
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(32px, 5.2vw, 50px);
+      font-size: clamp(34px, 5.5vw, 52px);
       line-height: 1.08;
       letter-spacing: -0.055em;
       word-break: keep-all;
-      overflow-wrap: normal;
     }
 
     p {
-      margin: 12px 0 20px;
+      margin: 14px 0 22px;
       font-size: 16px;
-      line-height: 1.56;
+      line-height: 1.55;
       word-break: keep-all;
-      color: var(--soft-ink);
     }
 
     button {
       appearance: none;
       border: 0;
       border-radius: 999px;
-      padding: 16px 30px;
+      padding: 16px 34px;
       font-size: 20px;
-      font-weight: 900;
-      color: white;
-      background: linear-gradient(180deg, #ffa92d, #f38318);
-      box-shadow: 0 10px 0 var(--orange-dark), 0 22px 34px rgba(243, 131, 24, .22);
+      font-weight: 950;
+      color: #fff;
+      background: linear-gradient(180deg, #ffa72a, #f28316);
+      box-shadow: 0 10px 0 var(--orange-dark), 0 18px 38px rgba(242, 131, 22, .24);
       cursor: pointer;
       transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
     }
@@ -125,80 +119,65 @@
 
     button:active {
       transform: translateY(7px);
-      box-shadow: 0 3px 0 var(--orange-dark), 0 13px 22px rgba(243, 131, 24, .20);
+      box-shadow: 0 3px 0 var(--orange-dark), 0 10px 22px rgba(242, 131, 22, .22);
     }
 
     button.secondary {
-      margin-top: 12px;
-      padding: 12px 20px;
+      margin-top: 10px;
+      padding: 11px 22px;
       font-size: 15px;
-      color: #794519;
-      background: rgba(255, 244, 211, .95);
-      box-shadow: inset 0 0 0 2px rgba(255, 178, 60, .46);
+      color: #744116;
+      background: rgba(255,255,255,.86);
+      border: 2px solid rgba(255, 169, 54, .46);
+      box-shadow: none;
     }
 
     input {
       width: 100%;
       height: 56px;
       margin: 18px 0 16px;
-      padding: 0 18px;
-      border: 3px solid rgba(255, 128, 22, .92);
+      border: 3px solid #ff8a1d;
       border-radius: 18px;
-      outline: 0;
-      text-align: center;
-      font-size: 20px;
+      padding: 0 18px;
+      font-size: 19px;
       font-weight: 900;
+      text-align: center;
       color: var(--ink);
-      background: rgba(255,255,255,.92);
-    }
-
-    input:focus {
-      border-color: #ff9f22;
-      box-shadow: 0 0 0 5px rgba(255,159,34,.18);
+      background: rgba(255,255,255,.96);
+      outline: none;
     }
 
     .scoreline {
-      margin-top: 10px;
-      font-size: clamp(34px, 7vw, 52px);
-      font-weight: 1000;
-      line-height: 1;
-      color: #e67514;
+      margin: 10px 0 4px;
+      color: #e06912;
+      font-size: 28px;
+      font-weight: 950;
     }
 
     .rank-list {
-      list-style: none;
-      margin: 18px 0 10px;
+      margin: 18px 0 12px;
       padding: 0;
-      max-height: 300px;
-      overflow: auto;
+      list-style: none;
       text-align: left;
+      max-height: 310px;
+      overflow: auto;
     }
 
     .rank-list li {
       display: grid;
-      grid-template-columns: 46px 1fr 74px;
-      align-items: center;
+      grid-template-columns: 46px 1fr 70px;
       gap: 10px;
+      align-items: center;
+      padding: 11px 13px;
       margin: 8px 0;
-      padding: 12px 14px;
       border-radius: 16px;
-      background: rgba(255,255,255,.72);
+      background: rgba(255,255,255,.78);
       font-weight: 900;
     }
 
     .rank-list li.me {
-      background: #fff0b8;
-      outline: 3px solid rgba(255, 172, 34, .65);
-    }
-
-    .rank-empty {
-      margin: 18px 0;
-      padding: 18px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.62);
-      color: var(--soft-ink);
-      font-weight: 800;
-      text-align: center;
+      outline: 3px solid rgba(255, 165, 40, .72);
+      background: #fff1bf;
     }
 
     .toast {
@@ -206,46 +185,36 @@
       left: 50%;
       bottom: 24px;
       transform: translateX(-50%);
-      z-index: 5;
+      max-width: min(92vw, 520px);
       padding: 12px 16px;
       border-radius: 999px;
-      color: #774011;
-      font-weight: 900;
       background: rgba(255,255,255,.92);
-      box-shadow: 0 14px 40px rgba(105,63,20,.18);
+      color: rgba(57,39,25,.76);
+      font-weight: 800;
+      box-shadow: 0 12px 40px rgba(80, 52, 24, .18);
       pointer-events: none;
-      opacity: 0;
-      transition: opacity .18s ease;
     }
-
-    .toast.show { opacity: 1; }
 
     @media (max-width: 560px) {
       .card {
-        width: min(94vw, 520px);
+        width: min(94vw, 540px);
         padding: 26px 22px 24px;
         border-radius: 26px;
       }
 
       h1 { font-size: clamp(30px, 9vw, 44px); }
 
-      p { font-size: 15px; }
+      p { font-size: 14px; }
 
       button {
-        padding: 15px 26px;
+        padding: 15px 28px;
         font-size: 18px;
-      }
-
-      .rank-list li {
-        grid-template-columns: 40px 1fr 64px;
-        padding: 11px 12px;
       }
     }
   </style>
 </head>
-
 <body>
-  <main id="app">
+  <main id="stage">
     <canvas id="game" width="1280" height="720" aria-label="계란 이마 챌린지 게임 화면"></canvas>
   </main>
 
@@ -278,654 +247,689 @@
     </div>
   </section>
 
-  <div class="toast" id="toast"></div>
+  <div id="toast" class="toast hidden"></div>
 
   <script src="./firebase-config.js"></script>
-  <script>
-    (() => {
-      'use strict';
+  <script type="module">
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
 
-      const canvas = document.getElementById('game');
-      const ctx = canvas.getContext('2d');
-      const W = canvas.width;
-      const H = canvas.height;
+    const startOverlay = document.getElementById('startOverlay');
+    const nameOverlay = document.getElementById('nameOverlay');
+    const rankOverlay = document.getElementById('rankOverlay');
+    const startBtn = document.getElementById('startBtn');
+    const saveRankBtn = document.getElementById('saveRankBtn');
+    const againBtn = document.getElementById('againBtn');
+    const refreshRankBtn = document.getElementById('refreshRankBtn');
+    const nameInput = document.getElementById('nameInput');
+    const finalScoreText = document.getElementById('finalScoreText');
+    const rankList = document.getElementById('rankList');
+    const toast = document.getElementById('toast');
 
-      const startOverlay = document.getElementById('startOverlay');
-      const nameOverlay = document.getElementById('nameOverlay');
-      const rankOverlay = document.getElementById('rankOverlay');
-      const startBtn = document.getElementById('startBtn');
-      const saveRankBtn = document.getElementById('saveRankBtn');
-      const againBtn = document.getElementById('againBtn');
-      const refreshRankBtn = document.getElementById('refreshRankBtn');
-      const nameInput = document.getElementById('nameInput');
-      const finalScoreText = document.getElementById('finalScoreText');
-      const rankList = document.getElementById('rankList');
-      const toast = document.getElementById('toast');
+    const GAME_SECONDS = 30;
+    const FLOOR_Y = 650;
+    const ASSET = './assets/';
 
-      const GAME_SECONDS = 30;
-      const FLOOR_Y = 648;
-      const ASSET = './assets/';
+    const SOURCE = { w: 3000, h: 2000 };
 
-      const HIT_SPRITE = { frameW: 720, frameH: 480, frames: 10, frameMs: 40 };
-      const PEELED_SPRITE = { frameW: 180, frameH: 180, frames: 3, frameMs: 40 };
+    // 핵심: 기본자세.png와 계란 맞는 모습.sprite.png 모두 같은 3:2 원본 프레임 기준으로 그립니다.
+    // 그래서 기본자세와 맞는 모션의 크기/위치가 달라지지 않습니다.
+    const HIT_SPRITE = { frameW: 900, frameH: 600, frames: 10, frameMs: 40 };
+    const PEELED_SPRITE = { frameW: 180, frameH: 180, frames: 3, frameMs: 40 };
 
-      const paths = {
-        idle: ASSET + '기본자세.png',
-        hitSprite: ASSET + '계란 맞는 모습.sprite.png',
-        hitGif: ASSET + '계란 맞는 모습.gif',
-        eggTop: ASSET + '계란 안깐거 - 윗부분.png',
-        eggBottom: ASSET + '계란 안깐거 - 아래부분.png',
-        peeledSprite: ASSET + '깐계란.sprite.png',
-        peeledGif: ASSET + '깐계란.gif'
+    const paths = {
+      idle: ASSET + '기본자세.png',
+      hitSprite: ASSET + '계란 맞는 모습.sprite.png',
+      eggTop: ASSET + '계란 안깐거 - 윗부분.png',
+      eggBottom: ASSET + '계란 안깐거 - 아래부분.png',
+      peeledSprite: ASSET + '깐계란.sprite.png'
+    };
+
+    const images = {};
+    const projectiles = [];
+    const debris = [];
+    const impactMarks = [];
+
+    let state = 'loading';
+    let score = 0;
+    let startAt = 0;
+    let now = performance.now();
+    let prev = now;
+    let hitAnimStart = -Infinity;
+    let lastSavedId = null;
+
+    const char = {
+      x: 190,
+      y: 48,
+      w: 945,
+      h: 630,
+      foreheadSourceX: 1500,
+      foreheadSourceY: 585,
+      visibleBBox: { x1: 478, y1: 49, x2: 2332, y2: 1916 }
+    };
+
+    const cloud = {
+      ready: false,
+      failed: false,
+      app: null,
+      db: null,
+      addDoc: null,
+      collection: null,
+      serverTimestamp: null,
+      getDocs: null,
+      query: null,
+      orderBy: null,
+      limit: null
+    };
+
+    function show(el) { el.classList.remove('hidden'); }
+    function hide(el) { el.classList.add('hidden'); }
+
+    function say(text) {
+      toast.textContent = text;
+      show(toast);
+      clearTimeout(say.timer);
+      say.timer = setTimeout(() => hide(toast), 1600);
+    }
+
+    function loadImage(src) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = encodeURI(src);
+      });
+    }
+
+    function rand(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function sourceToCanvas(sx, sy) {
+      return {
+        x: char.x + (sx / SOURCE.w) * char.w,
+        y: char.y + (sy / SOURCE.h) * char.h
+      };
+    }
+
+    function forehead() {
+      return sourceToCanvas(char.foreheadSourceX, char.foreheadSourceY);
+    }
+
+    function characterVisibleRect() {
+      const b = char.visibleBBox;
+      const p1 = sourceToCanvas(b.x1, b.y1);
+      const p2 = sourceToCanvas(b.x2, b.y2);
+      return {
+        x: p1.x,
+        y: p1.y,
+        w: p2.x - p1.x,
+        h: p2.y - p1.y
+      };
+    }
+
+    function pointer(evt) {
+      const rect = canvas.getBoundingClientRect();
+      const t = evt.touches && evt.touches[0] ? evt.touches[0] : evt;
+      return {
+        x: (t.clientX - rect.left) * W / rect.width,
+        y: (t.clientY - rect.top) * H / rect.height
+      };
+    }
+
+    function insideCharacter(x, y) {
+      const r = characterVisibleRect();
+      return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+    }
+
+    function remainingSeconds() {
+      if (state !== 'playing') return GAME_SECONDS;
+      return clamp(GAME_SECONDS - (now - startAt) / 1000, 0, GAME_SECONDS);
+    }
+
+    function startGame() {
+      state = 'playing';
+      score = 0;
+      projectiles.length = 0;
+      debris.length = 0;
+      impactMarks.length = 0;
+      hitAnimStart = -Infinity;
+      startAt = performance.now();
+      prev = startAt;
+      hide(startOverlay);
+      hide(nameOverlay);
+      hide(rankOverlay);
+    }
+
+    function finishGame() {
+      if (state !== 'playing') return;
+      state = 'ended';
+      finalScoreText.textContent = `${score}개`;
+      nameInput.value = '';
+      show(nameOverlay);
+      setTimeout(() => nameInput.focus(), 80);
+    }
+
+    function onCanvasClick(evt) {
+      if (state !== 'playing') return;
+      const p = pointer(evt);
+      if (!insideCharacter(p.x, p.y)) return;
+      launchEgg();
+    }
+
+    function launchEgg() {
+      const f = forehead();
+      const side = Math.random() < 0.5 ? -1 : 1;
+      const startX = f.x + side * rand(450, 590);
+      const startY = rand(430, 560);
+
+      projectiles.push({
+        sx: startX,
+        sy: startY,
+        tx: f.x + rand(-7, 7),
+        ty: f.y + rand(-7, 7),
+        x: startX,
+        y: startY,
+        t: 0,
+        duration: rand(0.20, 0.32),
+        arc: rand(80, 145),
+        size: rand(58, 72),
+        rot: rand(-0.35, 0.35),
+        spin: rand(-6, 6)
+      });
+    }
+
+    function hitEgg(egg) {
+      score += 1;
+      hitAnimStart = now;
+
+      impactMarks.push({
+        x: egg.tx,
+        y: egg.ty,
+        t: 0,
+        life: 0.20
+      });
+
+      const common = {
+        born: now,
+        frontMs: 700
       };
 
-      const images = {};
-      const projectiles = [];
-      const debris = [];
-      const impactMarks = [];
+      debris.push({
+        ...common,
+        type: 'top',
+        x: egg.tx,
+        y: egg.ty,
+        vx: rand(-420, 110),
+        vy: rand(-720, -420),
+        rot: rand(-1.0, 1.0),
+        vr: rand(-9, 9),
+        size: egg.size * rand(0.90, 1.12),
+        bounce: rand(0.22, 0.38),
+        settled: false
+      });
 
-      let state = 'loading';
-      let score = 0;
-      let startAt = 0;
-      let now = performance.now();
-      let prev = now;
-      let hitAnimStart = -Infinity;
-      let lastSavedId = null;
+      debris.push({
+        ...common,
+        type: 'bottom',
+        x: egg.tx,
+        y: egg.ty,
+        vx: rand(-110, 440),
+        vy: rand(-680, -380),
+        rot: rand(-1.0, 1.0),
+        vr: rand(-9, 9),
+        size: egg.size * rand(0.90, 1.12),
+        bounce: rand(0.20, 0.36),
+        settled: false
+      });
 
-      const char = {
-        // Full transparent frame destination. Idle PNG and hit sprite share the same 3:2 frame ratio.
-        x: 160,
-        y: 28,
-        w: 960,
-        h: 640,
-        foreheadSourceX: 1500,
-        foreheadSourceY: 585
-      };
+      debris.push({
+        ...common,
+        type: 'peeled',
+        x: egg.tx,
+        y: egg.ty - 12,
+        vx: rand(-350, 350),
+        vy: rand(-820, -560),
+        rot: rand(-0.7, 0.7),
+        vr: rand(-5, 5),
+        size: egg.size * rand(0.82, 1.00),
+        bounce: rand(0.42, 0.62),
+        settled: false,
+        frameOffset: Math.floor(rand(0, PEELED_SPRITE.frames))
+      });
+    }
 
-      const cloud = {
-        ready: false,
-        failed: false,
-        app: null,
-        db: null,
-        addDoc: null,
-        collection: null,
-        serverTimestamp: null,
-        getDocs: null,
-        query: null,
-        orderBy: null,
-        limit: null
-      };
+    function update(dt) {
+      now = performance.now();
 
-      function loadImage(src) {
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = encodeURI(src);
-        });
+      if (state === 'playing' && remainingSeconds() <= 0) {
+        finishGame();
       }
 
-      function rand(min, max) {
-        return min + Math.random() * (max - min);
-      }
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const egg = projectiles[i];
+        egg.t += dt / egg.duration;
+        const t = clamp(egg.t, 0, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
 
-      function clamp(v, min, max) {
-        return Math.max(min, Math.min(max, v));
-      }
+        egg.x = egg.sx + (egg.tx - egg.sx) * ease;
+        egg.y = egg.sy + (egg.ty - egg.sy) * ease - Math.sin(Math.PI * t) * egg.arc;
+        egg.rot += egg.spin * dt;
 
-      function show(el) { el.classList.remove('hidden'); }
-      function hide(el) { el.classList.add('hidden'); }
-
-      function showToast(message) {
-        toast.textContent = message;
-        toast.classList.add('show');
-        clearTimeout(showToast.timer);
-        showToast.timer = setTimeout(() => toast.classList.remove('show'), 1500);
-      }
-
-      function sourceToCanvas(sx, sy) {
-        return {
-          x: char.x + (sx / 3000) * char.w,
-          y: char.y + (sy / 2000) * char.h
-        };
-      }
-
-      function forehead() {
-        return sourceToCanvas(char.foreheadSourceX, char.foreheadSourceY);
-      }
-
-      function pointer(evt) {
-        const rect = canvas.getBoundingClientRect();
-        const t = evt.touches && evt.touches[0] ? evt.touches[0] : evt;
-        return {
-          x: (t.clientX - rect.left) * W / rect.width,
-          y: (t.clientY - rect.top) * H / rect.height
-        };
-      }
-
-      function insideCharacter(x, y) {
-        // Clickable area roughly follows the visible character, not the transparent frame.
-        return (
-          x >= char.x + char.w * 0.12 &&
-          x <= char.x + char.w * 0.86 &&
-          y >= char.y + char.h * 0.05 &&
-          y <= char.y + char.h * 0.98
-        );
-      }
-
-      function remainingSeconds() {
-        if (state !== 'playing') return GAME_SECONDS;
-        return clamp(GAME_SECONDS - (now - startAt) / 1000, 0, GAME_SECONDS);
-      }
-
-      function startGame() {
-        state = 'playing';
-        score = 0;
-        projectiles.length = 0;
-        debris.length = 0;
-        impactMarks.length = 0;
-        hitAnimStart = -Infinity;
-        startAt = performance.now();
-        prev = startAt;
-        hide(startOverlay);
-        hide(nameOverlay);
-        hide(rankOverlay);
-      }
-
-      function finishGame() {
-        if (state !== 'playing') return;
-        state = 'ended';
-        finalScoreText.textContent = `${score}개`;
-        nameInput.value = '';
-        show(nameOverlay);
-        setTimeout(() => nameInput.focus(), 80);
-      }
-
-      function onCanvasClick(evt) {
-        if (state !== 'playing') return;
-        const p = pointer(evt);
-        if (!insideCharacter(p.x, p.y)) return;
-        launchEgg();
-      }
-
-      function launchEgg() {
-        const f = forehead();
-        const side = Math.random() < 0.5 ? -1 : 1;
-        const startX = f.x + side * rand(470, 610);
-        const startY = rand(470, 610);
-        projectiles.push({
-          sx: startX,
-          sy: startY,
-          tx: f.x + rand(-10, 10),
-          ty: f.y + rand(-7, 8),
-          x: startX,
-          y: startY,
-          t: 0,
-          duration: rand(0.20, 0.31),
-          arc: rand(80, 142),
-          rot: rand(-0.4, 0.4),
-          spin: rand(-8, 8),
-          size: rand(66, 78)
-        });
-      }
-
-      function onEggImpact(egg) {
-        score += 1;
-        hitAnimStart = now;
-        const ix = egg.tx;
-        const iy = egg.ty;
-
-        impactMarks.push({ x: ix, y: iy, t: 0, life: 0.18 });
-
-        spawnDebris('top', ix, iy, {
-          vx: rand(-420, 120),
-          vy: rand(-770, -500),
-          size: egg.size * rand(0.92, 1.1),
-          bounce: rand(0.18, 0.34)
-        });
-
-        spawnDebris('bottom', ix, iy, {
-          vx: rand(-120, 450),
-          vy: rand(-690, -440),
-          size: egg.size * rand(0.92, 1.12),
-          bounce: rand(0.18, 0.34)
-        });
-
-        spawnDebris('peeled', ix, iy - 10, {
-          vx: rand(-360, 360),
-          vy: rand(-860, -580),
-          size: egg.size * rand(0.76, 0.92),
-          bounce: rand(0.45, 0.66)
-        });
-
-        if (debris.length > 240) debris.splice(0, debris.length - 240);
-      }
-
-      function spawnDebris(type, x, y, override = {}) {
-        debris.push({
-          type,
-          x,
-          y,
-          vx: override.vx ?? rand(-300, 300),
-          vy: override.vy ?? rand(-760, -420),
-          rot: rand(-Math.PI, Math.PI),
-          vr: rand(-8, 8),
-          size: override.size ?? rand(52, 78),
-          bounce: override.bounce ?? rand(0.24, 0.5),
-          born: now,
-          age: 0,
-          settled: false
-        });
-      }
-
-      function update(dt) {
-        now = performance.now();
-
-        if (state === 'playing' && remainingSeconds() <= 0.001) {
-          finishGame();
+        if (egg.t >= 1) {
+          projectiles.splice(i, 1);
+          hitEgg(egg);
         }
+      }
 
-        for (let i = projectiles.length - 1; i >= 0; i--) {
-          const egg = projectiles[i];
-          egg.t += dt / egg.duration;
-          const t = clamp(egg.t, 0, 1);
-          const ease = 1 - Math.pow(1 - t, 3);
+      const gravity = 1600;
 
-          egg.x = egg.sx + (egg.tx - egg.sx) * ease;
-          egg.y = egg.sy + (egg.ty - egg.sy) * ease - Math.sin(Math.PI * t) * egg.arc;
-          egg.rot += egg.spin * dt;
+      for (let i = debris.length - 1; i >= 0; i--) {
+        const d = debris[i];
 
-          if (egg.t >= 1) {
-            projectiles.splice(i, 1);
-            onEggImpact(egg);
-          }
-        }
+        if (!d.settled) {
+          d.vy += gravity * dt;
+          d.x += d.vx * dt;
+          d.y += d.vy * dt;
+          d.rot += d.vr * dt;
 
-        const gravity = 1750;
-        for (let i = debris.length - 1; i >= 0; i--) {
-          const d = debris[i];
-          d.age = (now - d.born) / 1000;
+          if (d.y + d.size * 0.36 >= FLOOR_Y) {
+            d.y = FLOOR_Y - d.size * 0.36;
+            d.vy = -Math.abs(d.vy) * d.bounce;
+            d.vx *= 0.74;
+            d.vr *= 0.70;
 
-          if (!d.settled) {
-            d.vy += gravity * dt;
-            d.x += d.vx * dt;
-            d.y += d.vy * dt;
-            d.rot += d.vr * dt;
-
-            const floor = FLOOR_Y + (d.type === 'peeled' ? 0 : rand(-0.6, 0.6));
-            if (d.y + d.size * 0.34 >= floor) {
-              d.y = floor - d.size * 0.34;
-              d.vy = -Math.abs(d.vy) * d.bounce;
-              d.vx *= 0.72;
-              d.vr *= 0.72;
-
-              if (Math.abs(d.vy) < 115) {
-                d.settled = true;
-                d.vy = 0;
-                d.vx = 0;
-                d.vr = 0;
-              }
+            if (Math.abs(d.vy) < 115) {
+              d.settled = true;
+              d.vy = 0;
+              d.vx = 0;
+              d.vr = 0;
             }
           }
-
-          if (d.x < -260 || d.x > W + 260 || d.y > H + 260 || d.age > 9) {
-            debris.splice(i, 1);
-          }
         }
 
-        for (let i = impactMarks.length - 1; i >= 0; i--) {
-          impactMarks[i].t += dt;
-          if (impactMarks[i].t > impactMarks[i].life) impactMarks.splice(i, 1);
+        if (d.x < -220 || d.x > W + 220 || d.y > H + 220 || debris.length > 220) {
+          debris.splice(i, 1);
         }
       }
 
-      function drawRoundedRect(x, y, w, h, r) {
+      for (let i = impactMarks.length - 1; i >= 0; i--) {
+        const b = impactMarks[i];
+        b.t += dt;
+        if (b.t >= b.life) impactMarks.splice(i, 1);
+      }
+    }
+
+    function roundRect(x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+    function drawBackground() {
+      ctx.clearRect(0, 0, W, H);
+
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, '#fff0b6');
+      g.addColorStop(0.42, '#ffd0a0');
+      g.addColorStop(1, '#aef0db');
+
+      ctx.fillStyle = g;
+      roundRect(14, 8, W - 28, H - 22, 36);
+      ctx.fill();
+
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      const blobs = [
+        [120, 114, 64, 42], [608, 98, 78, 36], [1100, 104, 72, 34],
+        [204, 545, 82, 52], [1050, 548, 94, 58], [777, 280, 48, 30],
+        [342, 176, 42, 22], [890, 242, 48, 30], [790, 654, 270, 46],
+        [512, 654, 318, 58]
+      ];
+      for (const [x, y, rx, ry] of blobs) {
+        ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.arcTo(x + w, y, x + w, y + h, r);
-        ctx.arcTo(x + w, y + h, x, y + h, r);
-        ctx.arcTo(x, y + h, x, y, r);
-        ctx.arcTo(x, y, x + w, y, r);
-        ctx.closePath();
+        ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalAlpha = 0.30;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(W / 2, FLOOR_Y + 16, 430, 62, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(120, 78, 34, .22)';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(70, FLOOR_Y + 6);
+      ctx.bezierCurveTo(330, FLOOR_Y - 28, 850, FLOOR_Y + 46, 1210, FLOOR_Y - 4);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawCharacter() {
+      const hitAge = now - hitAnimStart;
+      const hitDuration = HIT_SPRITE.frames * HIT_SPRITE.frameMs;
+      const useHit = hitAge >= 0 && hitAge < hitDuration + 80 && images.hitSprite;
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+
+      if (useHit) {
+        const frame = Math.min(HIT_SPRITE.frames - 1, Math.floor(hitAge / HIT_SPRITE.frameMs));
+        ctx.drawImage(
+          images.hitSprite,
+          frame * HIT_SPRITE.frameW, 0,
+          HIT_SPRITE.frameW, HIT_SPRITE.frameH,
+          char.x, char.y, char.w, char.h
+        );
+      } else if (images.idle) {
+        ctx.drawImage(images.idle, char.x, char.y, char.w, char.h);
       }
 
-      function drawBackground() {
-        ctx.clearRect(0, 0, W, H);
-        const bg = ctx.createLinearGradient(0, 0, W, H);
-        bg.addColorStop(0, '#fff0b8');
-        bg.addColorStop(0.48, '#ffd0a0');
-        bg.addColorStop(1, '#aee9d8');
+      ctx.restore();
+    }
 
-        drawRoundedRect(14, 8, W - 28, H - 20, 34);
-        ctx.fillStyle = bg;
-        ctx.fill();
+    function drawEggTexture(img, x, y, size, rot = 0) {
+      if (!img) return;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.drawImage(img, -size / 2, -size / 2, size, size);
+      ctx.restore();
+    }
 
-        ctx.save();
-        ctx.globalAlpha = 0.28;
-        const blobs = [
-          [150, 100, 58, 44], [360, 185, 48, 28], [920, 240, 50, 33], [1075, 120, 75, 52],
-          [230, 552, 88, 52], [804, 584, 155, 56], [1088, 432, 95, 58], [642, 118, 90, 38]
-        ];
-        for (const [x, y, rx, ry] of blobs) {
-          ctx.beginPath();
-          ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff';
-          ctx.fill();
-        }
-        ctx.restore();
+    function drawWholeEgg(x, y, size, rot) {
+      // 두 이미지를 같은 좌표/같은 크기로 겹쳐서 유격 없이 통계란처럼 보이게 합니다.
+      drawEggTexture(images.eggBottom, x, y, size, rot);
+      drawEggTexture(images.eggTop, x, y, size, rot);
+    }
 
-        ctx.save();
-        ctx.globalAlpha = 0.28;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.ellipse(W / 2, FLOOR_Y + 18, 430, 62, 0, 0, Math.PI * 2);
-        ctx.fill();
+    function drawProjectiles() {
+      for (const egg of projectiles) {
+        drawWholeEgg(egg.x, egg.y, egg.size, egg.rot);
+      }
+    }
 
-        ctx.strokeStyle = 'rgba(121, 80, 34, .22)';
+    function drawImpactMarks() {
+      ctx.save();
+      for (const b of impactMarks) {
+        const p = b.t / b.life;
+        const r = 10 + p * 30;
+        ctx.globalAlpha = 1 - p;
+        ctx.strokeStyle = '#ffb13c';
         ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.moveTo(70, FLOOR_Y + 6);
-        ctx.bezierCurveTo(330, FLOOR_Y - 28, 850, FLOOR_Y + 46, 1210, FLOOR_Y - 4);
+        for (let i = 0; i < 8; i++) {
+          const a = i * Math.PI / 4;
+          ctx.moveTo(b.x + Math.cos(a) * r * 0.36, b.y + Math.sin(a) * r * 0.36);
+          ctx.lineTo(b.x + Math.cos(a) * r, b.y + Math.sin(a) * r);
+        }
         ctx.stroke();
-        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    function drawPeeledSprite(d) {
+      if (!images.peeledSprite) return;
+      const age = Math.max(0, now - d.born);
+      const frame = (d.frameOffset + Math.floor(age / PEELED_SPRITE.frameMs)) % PEELED_SPRITE.frames;
+
+      ctx.save();
+      ctx.translate(d.x, d.y);
+      ctx.rotate(d.rot);
+      ctx.drawImage(
+        images.peeledSprite,
+        frame * PEELED_SPRITE.frameW, 0,
+        PEELED_SPRITE.frameW, PEELED_SPRITE.frameH,
+        -d.size / 2, -d.size / 2,
+        d.size, d.size
+      );
+      ctx.restore();
+    }
+
+    function drawDebrisItem(d) {
+      if (d.type === 'top') drawEggTexture(images.eggTop, d.x, d.y, d.size, d.rot);
+      else if (d.type === 'bottom') drawEggTexture(images.eggBottom, d.x, d.y, d.size, d.rot);
+      else drawPeeledSprite(d);
+    }
+
+    function drawDebris(layer) {
+      for (const d of debris) {
+        const isFront = now - d.born < d.frontMs || !d.settled;
+        if (layer === 'back' && isFront) continue;
+        if (layer === 'front' && !isFront) continue;
+        drawDebrisItem(d);
+      }
+    }
+
+    function drawHud() {
+      ctx.save();
+      ctx.font = '900 30px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.textBaseline = 'middle';
+
+      ctx.fillStyle = 'rgba(255,255,255,.90)';
+      roundRect(34, 50, 212, 62, 18);
+      ctx.fill();
+      ctx.fillStyle = '#332417';
+      ctx.fillText(`⏱ ${remainingSeconds().toFixed(1)}초`, 80, 82);
+
+      roundRect(1008, 120, 210, 62, 18);
+      ctx.fillStyle = 'rgba(255,255,255,.90)';
+      ctx.fill();
+      ctx.fillStyle = '#332417';
+      ctx.fillText(`🥚 ${score}개`, 1076, 152);
+
+      ctx.restore();
+    }
+
+    function drawLoading() {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,.78)';
+      roundRect(430, 305, 420, 96, 24);
+      ctx.fill();
+      ctx.fillStyle = '#392719';
+      ctx.font = '900 28px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('리소스 불러오는 중...', 640, 353);
+      ctx.restore();
+    }
+
+    function draw() {
+      drawBackground();
+
+      drawDebris('back');
+      drawCharacter();
+      drawProjectiles();
+      drawImpactMarks();
+      drawDebris('front');
+
+      if (state === 'loading') drawLoading();
+      if (state === 'playing') drawHud();
+    }
+
+    function loop(t) {
+      const dt = Math.min(0.033, (t - prev) / 1000 || 0);
+      prev = t;
+      update(dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    async function initFirebase() {
+      const cfg = window.EGG_GAME_FIREBASE_CONFIG;
+      if (!cfg || !cfg.apiKey || String(cfg.apiKey).includes('YOUR_')) {
+        cloud.ready = false;
+        return;
       }
 
-      function drawCharacter() {
-        const hitAge = now - hitAnimStart;
-        const useHit = hitAge >= 0 && hitAge < HIT_SPRITE.frames * HIT_SPRITE.frameMs + 80 && images.hitSprite;
-        ctx.save();
-        ctx.imageSmoothingEnabled = true;
+      try {
+        const appMod = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js');
+        const firestoreMod = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
 
-        if (useHit) {
-          const frame = Math.min(HIT_SPRITE.frames - 1, Math.floor(hitAge / HIT_SPRITE.frameMs));
-          ctx.drawImage(
-            images.hitSprite,
-            frame * HIT_SPRITE.frameW, 0,
-            HIT_SPRITE.frameW, HIT_SPRITE.frameH,
-            char.x, char.y, char.w, char.h
-          );
-        } else if (images.idle) {
-          ctx.drawImage(images.idle, char.x, char.y, char.w, char.h);
-        }
-
-        ctx.restore();
+        cloud.app = appMod.initializeApp(cfg);
+        cloud.db = firestoreMod.getFirestore(cloud.app);
+        cloud.addDoc = firestoreMod.addDoc;
+        cloud.collection = firestoreMod.collection;
+        cloud.serverTimestamp = firestoreMod.serverTimestamp;
+        cloud.getDocs = firestoreMod.getDocs;
+        cloud.query = firestoreMod.query;
+        cloud.orderBy = firestoreMod.orderBy;
+        cloud.limit = firestoreMod.limit;
+        cloud.ready = true;
+      } catch (err) {
+        console.warn('[Firebase 연결 실패: 로컬 랭킹 사용]', err);
+        cloud.failed = true;
       }
+    }
 
-      function drawEggTexture(img, x, y, size, rot = 0) {
-        if (!img) return;
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(rot);
-        ctx.drawImage(img, -size / 2, -size / 2, size, size);
-        ctx.restore();
+    function localRanks() {
+      try {
+        return JSON.parse(localStorage.getItem('egg-forehead-ranks-v3') || '[]');
+      } catch {
+        return [];
       }
+    }
 
-      function drawWholeEgg(x, y, size, rot) {
-        drawEggTexture(images.eggBottom, x, y, size, rot);
-        drawEggTexture(images.eggTop, x, y, size, rot);
-      }
+    function saveLocalRanks(ranks) {
+      localStorage.setItem('egg-forehead-ranks-v3', JSON.stringify(ranks.slice(0, 10)));
+    }
 
-      function drawProjectiles() {
-        for (const egg of projectiles) {
-          drawWholeEgg(egg.x, egg.y, egg.size, egg.rot);
-        }
-      }
+    async function saveRank(name, scoreValue) {
+      const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      lastSavedId = id;
 
-      function drawImpactMarks() {
-        ctx.save();
-        for (const b of impactMarks) {
-          const p = b.t / b.life;
-          const r = 10 + p * 30;
-          ctx.globalAlpha = 1 - p;
-          ctx.strokeStyle = '#ff9b25';
-          ctx.lineWidth = 6;
-          for (let i = 0; i < 7; i++) {
-            const a = i * Math.PI * 2 / 7 + 0.2;
-            ctx.beginPath();
-            ctx.moveTo(b.x + Math.cos(a) * r * 0.3, b.y + Math.sin(a) * r * 0.3);
-            ctx.lineTo(b.x + Math.cos(a) * r, b.y + Math.sin(a) * r);
-            ctx.stroke();
-          }
-        }
-        ctx.restore();
-      }
-
-      function drawDebris() {
-        for (const d of debris) {
-          if (d.type === 'top') {
-            drawEggTexture(images.eggTop, d.x, d.y, d.size, d.rot);
-          } else if (d.type === 'bottom') {
-            drawEggTexture(images.eggBottom, d.x, d.y, d.size, d.rot);
-          } else {
-            drawPeeled(d);
-          }
-        }
-      }
-
-      function drawPeeled(d) {
-        if (images.peeledSprite) {
-          const frame = Math.floor((d.age * 1000) / PEELED_SPRITE.frameMs) % PEELED_SPRITE.frames;
-          ctx.save();
-          ctx.translate(d.x, d.y);
-          ctx.rotate(d.rot);
-          ctx.drawImage(
-            images.peeledSprite,
-            frame * PEELED_SPRITE.frameW, 0,
-            PEELED_SPRITE.frameW, PEELED_SPRITE.frameH,
-            -d.size / 2, -d.size / 2,
-            d.size, d.size
-          );
-          ctx.restore();
-        }
-      }
-
-      function drawHUD() {
-        drawPill(34, 48, 210, 64, `⏱️ ${remainingSeconds().toFixed(1)}초`);
-        drawPill(W - 220, 48, 186, 64, `🥚 ${score}개`);
-      }
-
-      function drawPill(x, y, w, h, text) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(255,255,255,.90)';
-        ctx.shadowColor = 'rgba(96, 62, 24, .16)';
-        ctx.shadowBlur = 18;
-        ctx.shadowOffsetY = 8;
-        drawRoundedRect(x, y, w, h, 20);
-        ctx.fill();
-
-        ctx.shadowColor = 'transparent';
-        ctx.fillStyle = '#352518';
-        ctx.font = '900 26px system-ui, -apple-system, Segoe UI, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, x + w / 2, y + h / 2 + 1);
-        ctx.restore();
-      }
-
-      function render() {
-        drawBackground();
-        drawCharacter();
-        drawImpactMarks();
-        drawProjectiles();
-        drawDebris();
-        drawHUD();
-      }
-
-      function tick(t) {
-        const dt = Math.min(0.033, (t - prev) / 1000 || 0);
-        prev = t;
-        update(dt);
-        render();
-        requestAnimationFrame(tick);
-      }
-
-      function localRanks() {
-        try {
-          return JSON.parse(localStorage.getItem('eggForeheadRanks') || '[]');
-        } catch (_) {
-          return [];
-        }
-      }
-
-      function saveLocalRank(name, scoreValue) {
-        const id = 'local-' + Date.now() + '-' + Math.random().toString(16).slice(2);
-        const ranks = localRanks();
-        ranks.push({ id, name, score: scoreValue, createdAt: Date.now() });
-        ranks.sort((a, b) => b.score - a.score || a.createdAt - b.createdAt);
-        localStorage.setItem('eggForeheadRanks', JSON.stringify(ranks.slice(0, 50)));
-        return id;
-      }
-
-      async function initCloudRanking() {
-        const cfg = window.EGG_GAME_FIREBASE_CONFIG;
-        if (!cfg || !cfg.apiKey || !cfg.projectId) return;
-
-        try {
-          const appMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-          const fsMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-
-          cloud.app = appMod.initializeApp(cfg);
-          cloud.db = fsMod.getFirestore(cloud.app);
-          cloud.addDoc = fsMod.addDoc;
-          cloud.collection = fsMod.collection;
-          cloud.serverTimestamp = fsMod.serverTimestamp;
-          cloud.getDocs = fsMod.getDocs;
-          cloud.query = fsMod.query;
-          cloud.orderBy = fsMod.orderBy;
-          cloud.limit = fsMod.limit;
-          cloud.ready = true;
-        } catch (err) {
-          console.warn('[ranking] cloud ranking disabled:', err);
-          cloud.failed = true;
-        }
-      }
-
-      async function saveRank(name, scoreValue) {
-        if (cloud.ready) {
-          try {
-            const ref = await cloud.addDoc(cloud.collection(cloud.db, 'rankings'), {
-              name,
-              score: scoreValue,
-              duration: GAME_SECONDS,
-              createdAt: cloud.serverTimestamp()
-            });
-            return ref.id;
-          } catch (err) {
-            console.warn('[ranking] cloud save failed, use local:', err);
-          }
-        }
-        return saveLocalRank(name, scoreValue);
-      }
-
-      async function loadRanks() {
-        if (cloud.ready) {
-          try {
-            const q = cloud.query(
-              cloud.collection(cloud.db, 'rankings'),
-              cloud.orderBy('score', 'desc'),
-              cloud.limit(10)
-            );
-            const snap = await cloud.getDocs(q);
-            return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          } catch (err) {
-            console.warn('[ranking] cloud load failed, use local:', err);
-          }
-        }
-        return localRanks().slice(0, 10);
-      }
-
-      function renderRanks(ranks) {
-        rankList.innerHTML = '';
-
-        if (!ranks.length) {
-          const empty = document.createElement('div');
-          empty.className = 'rank-empty';
-          empty.textContent = '아직 등록된 기록이 없습니다.';
-          rankList.appendChild(empty);
-          return;
-        }
-
-        ranks.slice(0, 10).forEach((rank, index) => {
-          const li = document.createElement('li');
-          if (rank.id === lastSavedId) li.classList.add('me');
-
-          const pos = document.createElement('span');
-          pos.textContent = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}위`;
-
-          const name = document.createElement('span');
-          name.textContent = String(rank.name || '익명').slice(0, 12);
-
-          const point = document.createElement('span');
-          point.textContent = `${Number(rank.score || 0)}개`;
-          point.style.textAlign = 'right';
-
-          li.append(pos, name, point);
-          rankList.appendChild(li);
+      if (cloud.ready) {
+        await cloud.addDoc(cloud.collection(cloud.db, 'rankings'), {
+          name,
+          score: scoreValue,
+          duration: GAME_SECONDS,
+          createdAt: cloud.serverTimestamp()
         });
+        return;
       }
 
-      async function showRanks() {
-        const ranks = await loadRanks();
-        renderRanks(ranks);
+      const ranks = localRanks();
+      ranks.push({ id, name, score: scoreValue, createdAt: Date.now() });
+      ranks.sort((a, b) => b.score - a.score || a.createdAt - b.createdAt);
+      saveLocalRanks(ranks);
+    }
+
+    async function fetchRanks() {
+      if (cloud.ready) {
+        const q = cloud.query(
+          cloud.collection(cloud.db, 'rankings'),
+          cloud.orderBy('score', 'desc'),
+          cloud.orderBy('createdAt', 'asc'),
+          cloud.limit(10)
+        );
+        const snap = await cloud.getDocs(q);
+        return snap.docs.map((doc, idx) => ({
+          id: doc.id,
+          name: doc.data().name || '익명',
+          score: Number(doc.data().score || 0),
+          idx
+        }));
+      }
+
+      return localRanks().slice(0, 10);
+    }
+
+    async function renderRanks() {
+      rankList.innerHTML = '';
+      const ranks = await fetchRanks();
+
+      if (!ranks.length) {
+        const li = document.createElement('li');
+        li.style.gridTemplateColumns = '1fr';
+        li.textContent = '아직 등록된 기록이 없습니다.';
+        rankList.appendChild(li);
+        return;
+      }
+
+      ranks.forEach((r, i) => {
+        const li = document.createElement('li');
+        if (r.id === lastSavedId) li.classList.add('me');
+        li.innerHTML = `<span>${i + 1}위</span><span></span><strong>${r.score}개</strong>`;
+        li.children[1].textContent = r.name;
+        rankList.appendChild(li);
+      });
+    }
+
+    async function saveRankAndShow() {
+      const name = nameInput.value.trim().slice(0, 12);
+      if (!name) {
+        say('이름을 입력해 주세요.');
+        nameInput.focus();
+        return;
+      }
+
+      saveRankBtn.disabled = true;
+      try {
+        await saveRank(name, score);
+        hide(nameOverlay);
         show(rankOverlay);
+        await renderRanks();
+      } catch (err) {
+        console.error(err);
+        say('랭킹 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      } finally {
+        saveRankBtn.disabled = false;
       }
+    }
 
-      async function submitName() {
-        if (state !== 'ended') return;
+    async function init() {
+      const entries = await Promise.all(
+        Object.entries(paths).map(async ([key, src]) => [key, await loadImage(src)])
+      );
 
-        const name = nameInput.value.trim().slice(0, 12);
-        if (!name) {
-          showToast('이름을 입력해주세요');
-          nameInput.focus();
-          return;
-        }
+      for (const [key, img] of entries) images[key] = img;
 
-        saveRankBtn.disabled = true;
-        saveRankBtn.textContent = '등록 중...';
+      state = 'start';
+      await initFirebase();
+      hide(toast);
+    }
 
-        try {
-          lastSavedId = await saveRank(name, score);
-          hide(nameOverlay);
-          await showRanks();
-        } finally {
-          saveRankBtn.disabled = false;
-          saveRankBtn.textContent = '랭킹 등록';
-        }
-      }
+    canvas.addEventListener('click', onCanvasClick);
+    canvas.addEventListener('touchstart', (evt) => {
+      evt.preventDefault();
+      onCanvasClick(evt);
+    }, { passive: false });
 
-      async function boot() {
-        const entries = await Promise.all(Object.entries(paths).map(async ([key, path]) => [key, await loadImage(path)]));
-        for (const [key, img] of entries) images[key] = img;
+    startBtn.addEventListener('click', startGame);
+    againBtn.addEventListener('click', () => {
+      hide(rankOverlay);
+      show(startOverlay);
+      state = 'start';
+      projectiles.length = 0;
+      debris.length = 0;
+      impactMarks.length = 0;
+      score = 0;
+      hitAnimStart = -Infinity;
+    });
+    refreshRankBtn.addEventListener('click', renderRanks);
+    saveRankBtn.addEventListener('click', saveRankAndShow);
+    nameInput.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter') saveRankAndShow();
+    });
 
-        state = 'start';
-        await initCloudRanking();
-        requestAnimationFrame((t) => {
-          prev = t;
-          now = t;
-          requestAnimationFrame(tick);
-        });
-      }
-
-      startBtn.addEventListener('click', startGame);
-      canvas.addEventListener('click', onCanvasClick);
-      canvas.addEventListener('touchstart', (evt) => {
-        evt.preventDefault();
-        onCanvasClick(evt);
-      }, { passive: false });
-
-      saveRankBtn.addEventListener('click', submitName);
-      nameInput.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Enter') submitName();
-      });
-      againBtn.addEventListener('click', () => {
-        hide(rankOverlay);
-        show(startOverlay);
-        state = 'start';
-      });
-      refreshRankBtn.addEventListener('click', showRanks);
-
-      boot();
-    })();
+    requestAnimationFrame(loop);
+    init();
   </script>
 </body>
 </html>
