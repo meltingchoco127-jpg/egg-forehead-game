@@ -82,6 +82,21 @@
       pointer-events: auto;
     }
 
+    .start-card {
+      width: min(94vw, 560px);
+      padding-left: 34px;
+      padding-right: 34px;
+    }
+
+    .start-title {
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -0.05em;
+      word-break: keep-all;
+      overflow-wrap: normal;
+      white-space: normal;
+    }
+
     .badge {
       display: inline-flex;
       align-items: center;
@@ -317,10 +332,10 @@
   </section>
 
   <section class="overlay" id="startOverlay" aria-live="polite">
-    <div class="card">
+    <div class="card start-card">
       <div class="badge">🥚 계란을 까묵자!</div>
-      <h1>아테 이마로 계란 까기</h1>
-      <p>아테님을 클릭하면 계란이 날아가 이마에 부딪힙니다.<br />30초 동안 최대한 많이 맞혀보세요.</p>
+      <h1 class="start-title">아테 이마로 계란 까기</h1>
+      <p>캐릭터를 클릭하면 계란이 날아가 이마에 부딪힙니다.<br />30초 동안 최대한 많이 맞혀보세요.</p>
       <button id="startBtn" type="button">게임 시작</button>
       <p class="subtle" id="loadStatus">리소스 불러오는 중...</p>
     </div>
