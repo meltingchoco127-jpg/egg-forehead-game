@@ -1,39 +1,33 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>계란 이마 챌린지</title>
-  <meta name="description" content="30초 동안 캐릭터에게 계란을 맞히는 클릭형 웹 게임" />
   <style>
     :root {
-      --ink: #3b2a1c;
-      --paper: rgba(255, 255, 255, 0.86);
-      --orange: #ffad34;
-      --orange-deep: #e87717;
-      --mint: #8ee7d0;
-      --yellow: #ffe277;
-      --shadow: rgba(111, 68, 25, 0.24);
+      --ink: #352518;
+      --soft-ink: rgba(53,37,24,.72);
+      --paper: rgba(255, 255, 255, .88);
+      --orange: #ff9f22;
+      --orange-dark: #b95b12;
+      --line: rgba(255,255,255,.72);
+      --shadow: rgba(84, 55, 23, .20);
     }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       margin: 0;
       overflow: hidden;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
       color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
       background:
-        radial-gradient(circle at 20% 16%, rgba(255,255,255,.88), rgba(255,255,255,0) 26%),
-        radial-gradient(circle at 82% 18%, rgba(255,241,157,.86), rgba(255,241,157,0) 24%),
-        linear-gradient(145deg, #fff4bd 0%, #ffd2a1 42%, #a8efd9 100%);
-      user-select: none;
+        radial-gradient(circle at 18% 16%, rgba(255,255,255,.9), rgba(255,255,255,0) 18%),
+        radial-gradient(circle at 84% 10%, rgba(255,250,195,.72), rgba(255,250,195,0) 18%),
+        linear-gradient(135deg, #ffe7a8 0%, #ffd1a0 44%, #b5eedc 100%);
     }
 
     #app {
@@ -50,11 +44,12 @@
       height: auto;
       max-height: 100vh;
       aspect-ratio: 16 / 9;
+      background: transparent;
       border-radius: clamp(0px, 2.2vw, 30px);
       box-shadow: 0 22px 68px var(--shadow);
       touch-action: manipulation;
       cursor: pointer;
-      background: transparent;
+      user-select: none;
     }
 
     .overlay {
@@ -66,35 +61,18 @@
       pointer-events: none;
     }
 
-    .overlay.hidden {
-      display: none;
-    }
+    .overlay.hidden { display: none; }
 
     .card {
-      width: min(92vw, 500px);
+      width: min(92vw, 520px);
       padding: 30px 28px 28px;
       border-radius: 30px;
       text-align: center;
       background: var(--paper);
-      border: 2px solid rgba(255,255,255,.72);
+      border: 2px solid var(--line);
       backdrop-filter: blur(14px);
       box-shadow: 0 22px 70px rgba(105, 63, 20, .20);
       pointer-events: auto;
-    }
-
-    .start-card {
-      width: min(94vw, 560px);
-      padding-left: 34px;
-      padding-right: 34px;
-    }
-
-    .start-title {
-      font-size: clamp(28px, 5vw, 44px);
-      line-height: 1.08;
-      letter-spacing: -0.05em;
-      word-break: keep-all;
-      overflow-wrap: normal;
-      white-space: normal;
     }
 
     .badge {
@@ -109,13 +87,16 @@
       color: #80400e;
       background: #fff2bd;
       border: 2px solid rgba(255, 186, 66, .48);
+      white-space: nowrap;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(30px, 6vw, 50px);
-      line-height: 1.04;
+      font-size: clamp(32px, 5.2vw, 50px);
+      line-height: 1.08;
       letter-spacing: -0.055em;
+      word-break: keep-all;
+      overflow-wrap: normal;
     }
 
     p {
@@ -123,6 +104,7 @@
       font-size: 16px;
       line-height: 1.56;
       word-break: keep-all;
+      color: var(--soft-ink);
     }
 
     button {
@@ -130,65 +112,64 @@
       border: 0;
       border-radius: 999px;
       padding: 16px 30px;
-      min-width: 170px;
       font-size: 20px;
-      font-weight: 950;
+      font-weight: 900;
       color: white;
-      background: linear-gradient(180deg, var(--orange), var(--orange-deep));
-      box-shadow: 0 11px 0 #994610, 0 22px 36px rgba(232, 119, 23, .24);
+      background: linear-gradient(180deg, #ffa92d, #f38318);
+      box-shadow: 0 10px 0 var(--orange-dark), 0 22px 34px rgba(243, 131, 24, .22);
       cursor: pointer;
-      transition: transform .1s ease, box-shadow .1s ease, filter .15s ease;
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
     }
 
-    button:hover {
-      filter: brightness(1.04);
-    }
+    button:hover { filter: brightness(1.03); }
 
     button:active {
       transform: translateY(7px);
-      box-shadow: 0 4px 0 #994610, 0 12px 20px rgba(232, 119, 23, .22);
+      box-shadow: 0 3px 0 var(--orange-dark), 0 13px 22px rgba(243, 131, 24, .20);
     }
 
     button.secondary {
-      margin-top: 10px;
-      color: #784219;
-      background: linear-gradient(180deg, #fff4c7, #ffd46e);
-      box-shadow: 0 9px 0 #d69523, 0 18px 28px rgba(214, 149, 35, .22);
+      margin-top: 12px;
+      padding: 12px 20px;
+      font-size: 15px;
+      color: #794519;
+      background: rgba(255, 244, 211, .95);
+      box-shadow: inset 0 0 0 2px rgba(255, 178, 60, .46);
     }
 
     input {
       width: 100%;
-      height: 54px;
-      margin: 8px 0 14px;
-      padding: 0 16px;
-      border: 2px solid rgba(70, 45, 25, .18);
-      border-radius: 17px;
-      outline: none;
-      background: #fff;
-      color: var(--ink);
-      font: inherit;
-      font-size: 18px;
-      font-weight: 850;
+      height: 56px;
+      margin: 18px 0 16px;
+      padding: 0 18px;
+      border: 3px solid rgba(255, 128, 22, .92);
+      border-radius: 18px;
+      outline: 0;
       text-align: center;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--ink);
+      background: rgba(255,255,255,.92);
     }
 
     input:focus {
-      border-color: var(--orange-deep);
-      box-shadow: 0 0 0 4px rgba(255, 173, 52, .18);
+      border-color: #ff9f22;
+      box-shadow: 0 0 0 5px rgba(255,159,34,.18);
     }
 
     .scoreline {
-      margin: 10px 0 14px;
-      font-size: 26px;
-      font-weight: 950;
-      color: #e46e12;
+      margin-top: 10px;
+      font-size: clamp(34px, 7vw, 52px);
+      font-weight: 1000;
+      line-height: 1;
+      color: #e67514;
     }
 
     .rank-list {
       list-style: none;
+      margin: 18px 0 10px;
       padding: 0;
-      margin: 18px 0 8px;
-      max-height: min(46vh, 330px);
+      max-height: 300px;
       overflow: auto;
       text-align: left;
     }
@@ -200,144 +181,80 @@
       gap: 10px;
       margin: 8px 0;
       padding: 12px 14px;
-      border-radius: 17px;
+      border-radius: 16px;
       background: rgba(255,255,255,.72);
       font-weight: 900;
     }
 
     .rank-list li.me {
-      background: #fff2b8;
-      outline: 3px solid rgba(255, 174, 52, .78);
+      background: #fff0b8;
+      outline: 3px solid rgba(255, 172, 34, .65);
     }
 
-    .rank-name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .rank-empty {
+      margin: 18px 0;
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.62);
+      color: var(--soft-ink);
+      font-weight: 800;
+      text-align: center;
     }
 
-    .rank-score {
-      text-align: right;
-      color: #e46e12;
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      z-index: 5;
+      padding: 12px 16px;
+      border-radius: 999px;
+      color: #774011;
+      font-weight: 900;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 14px 40px rgba(105,63,20,.18);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .18s ease;
     }
 
-    .subtle {
-      margin: 15px 0 0;
-      font-size: 13px;
-      opacity: .66;
-    }
+    .toast.show { opacity: 1; }
 
-    #loadStatus {
-      display: none !important;
-    }
-
-    @media (max-width: 520px) {
+    @media (max-width: 560px) {
       .card {
-        padding: 26px 20px 24px;
+        width: min(94vw, 520px);
+        padding: 26px 22px 24px;
+        border-radius: 26px;
       }
 
-      p {
-        font-size: 15px;
-      }
+      h1 { font-size: clamp(30px, 9vw, 44px); }
+
+      p { font-size: 15px; }
 
       button {
-        width: 100%;
-      }
-    }
-
-    #loadStatus {
-      display: none !important;
-    }
-
-    .bgm-toggle {
-      position: fixed;
-      top: calc(env(safe-area-inset-top, 0px) + 18px);
-      right: calc(env(safe-area-inset-right, 0px) + 18px);
-      z-index: 40;
-      width: auto !important;
-      min-width: 122px;
-      height: 48px;
-      padding: 0 18px;
-      border: 2px solid rgba(255,255,255,.72);
-      color: #6c360f;
-      font-size: 16px;
-      font-weight: 950;
-      background: rgba(255, 255, 255, .88);
-      box-shadow: 0 9px 0 rgba(171, 94, 22, .55), 0 17px 30px rgba(99, 57, 15, .18);
-      backdrop-filter: blur(12px);
-    }
-
-    .bgm-toggle.is-off {
-      color: rgba(61, 42, 27, .58);
-      background: rgba(255, 255, 255, .62);
-      box-shadow: 0 9px 0 rgba(130, 113, 94, .48), 0 17px 30px rgba(99, 57, 15, .12);
-    }
-
-    .ready-layer {
-      z-index: 35;
-      pointer-events: none;
-    }
-
-    .ready-bubble {
-      display: grid;
-      place-items: center;
-      min-width: min(70vw, 360px);
-      padding: 36px 54px;
-      border-radius: 40px;
-      color: #fff;
-      font-size: clamp(58px, 12vw, 110px);
-      font-weight: 1000;
-      letter-spacing: -0.08em;
-      text-shadow: 0 7px 0 rgba(112, 58, 14, .38), 0 12px 28px rgba(105, 55, 13, .34);
-      background: linear-gradient(180deg, rgba(255, 186, 61, .95), rgba(239, 116, 20, .94));
-      border: 4px solid rgba(255, 255, 255, .88);
-      box-shadow: 0 22px 64px rgba(107, 61, 18, .28);
-      animation: readyPop .78s cubic-bezier(.17, .84, .44, 1) both;
-    }
-
-    @keyframes readyPop {
-      0% { transform: scale(.6) rotate(-4deg); opacity: 0; }
-      45% { transform: scale(1.12) rotate(2deg); opacity: 1; }
-      100% { transform: scale(1) rotate(0); opacity: 1; }
-    }
-
-    @media (max-width: 620px) {
-      .bgm-toggle {
-        top: calc(env(safe-area-inset-top, 0px) + 12px);
-        right: calc(env(safe-area-inset-right, 0px) + 12px);
-        min-width: 104px;
-        height: 42px;
-        padding: 0 13px;
-        font-size: 14px;
+        padding: 15px 26px;
+        font-size: 18px;
       }
 
-      .ready-bubble {
-        min-width: min(76vw, 300px);
-        padding: 28px 38px;
-        border-radius: 32px;
+      .rank-list li {
+        grid-template-columns: 40px 1fr 64px;
+        padding: 11px 12px;
       }
     }
-
   </style>
 </head>
+
 <body>
   <main id="app">
     <canvas id="game" width="1280" height="720" aria-label="계란 이마 챌린지 게임 화면"></canvas>
   </main>
 
-  <button id="bgmToggle" class="bgm-toggle" type="button" aria-pressed="true" aria-label="BGM 켜기 또는 끄기">🔊 BGM</button>
-
-  <section class="overlay ready-layer hidden" id="readyOverlay" aria-live="assertive">
-    <div class="ready-bubble">준비!</div>
-  </section>
-
   <section class="overlay" id="startOverlay" aria-live="polite">
-    <div class="card start-card">
-      <div class="badge">🥚 계란을 까묵자!</div>
-      <h1 class="start-title">아테 이마로 계란 까기</h1>
+    <div class="card">
+      <div class="badge">🥚 30초 클릭 챌린지</div>
+      <h1>계란 이마 챌린지</h1>
       <p>캐릭터를 클릭하면 계란이 날아가 이마에 부딪힙니다.<br />30초 동안 최대한 많이 맞혀보세요.</p>
       <button id="startBtn" type="button">게임 시작</button>
-      <p class="subtle" id="loadStatus">리소스 불러오는 중...</p>
     </div>
   </section>
 
@@ -347,7 +264,7 @@
       <h1>기록 완료!</h1>
       <div class="scoreline" id="finalScoreText">0개</div>
       <input id="nameInput" maxlength="12" placeholder="이름을 입력하세요" autocomplete="off" />
-      <button id="saveRankBtn" type="button">공용 랭킹 등록</button>
+      <button id="saveRankBtn" type="button">랭킹 등록</button>
     </div>
   </section>
 
@@ -357,10 +274,11 @@
       <h1>랭킹</h1>
       <ol class="rank-list" id="rankList"></ol>
       <button id="againBtn" type="button">다시 하기</button>
-      <button id="resetRankBtn" class="secondary" type="button">랭킹 새로고침</button>
-      <p class="subtle">Firebase 미설정 상태에서는 테스트용 로컬 랭킹으로 동작합니다.</p>
+      <button id="refreshRankBtn" class="secondary" type="button">랭킹 새로고침</button>
     </div>
   </section>
+
+  <div class="toast" id="toast"></div>
 
   <script src="./firebase-config.js"></script>
   <script>
@@ -369,592 +287,252 @@
 
       const canvas = document.getElementById('game');
       const ctx = canvas.getContext('2d');
-
       const W = canvas.width;
       const H = canvas.height;
-      const GAME_SECONDS = 30;
-      const FLOOR_Y = 622;
-      const LOCAL_RANK_KEY = 'egg-forehead-game-rank-v2-local-fallback';
-      const FIREBASE_SDK_VERSION = '10.12.4';
-      const LEADERBOARD_PATH = ['leaderboards', 'egg-forehead-game-v1', 'scores'];
-
-      let leaderboardMode = 'local';
-      let leaderboardError = null;
-      let firebaseApi = null;
 
       const startOverlay = document.getElementById('startOverlay');
       const nameOverlay = document.getElementById('nameOverlay');
       const rankOverlay = document.getElementById('rankOverlay');
-      const readyOverlay = document.getElementById('readyOverlay');
-      const bgmToggle = document.getElementById('bgmToggle');
       const startBtn = document.getElementById('startBtn');
       const saveRankBtn = document.getElementById('saveRankBtn');
       const againBtn = document.getElementById('againBtn');
-      const resetRankBtn = document.getElementById('resetRankBtn');
+      const refreshRankBtn = document.getElementById('refreshRankBtn');
       const nameInput = document.getElementById('nameInput');
       const finalScoreText = document.getElementById('finalScoreText');
       const rankList = document.getElementById('rankList');
-      const loadStatus = document.getElementById('loadStatus');
+      const toast = document.getElementById('toast');
 
-      function hasFirebaseConfig() {
-        const cfg = window.EGG_GAME_FIREBASE_CONFIG;
-        return Boolean(
-          cfg &&
-          typeof cfg.apiKey === 'string' &&
-          typeof cfg.projectId === 'string' &&
-          cfg.apiKey &&
-          cfg.projectId &&
-          !cfg.apiKey.includes('YOUR_') &&
-          !cfg.projectId.includes('YOUR_')
-        );
-      }
+      const GAME_SECONDS = 30;
+      const FLOOR_Y = 648;
+      const ASSET = './assets/';
 
-      async function initLeaderboard() {
-        if (!hasFirebaseConfig()) {
-          leaderboardMode = 'local';
-          leaderboardError = 'Firebase 설정 전';
-          updateLoadStatus();
-          return;
-        }
+      const HIT_SPRITE = { frameW: 720, frameH: 480, frames: 10, frameMs: 40 };
+      const PEELED_SPRITE = { frameW: 180, frameH: 180, frames: 3, frameMs: 40 };
 
-        try {
-          const appModuleUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`;
-          const firestoreModuleUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`;
-          const [{ initializeApp }, firestore] = await Promise.all([
-            import(appModuleUrl),
-            import(firestoreModuleUrl)
-          ]);
-
-          const app = initializeApp(window.EGG_GAME_FIREBASE_CONFIG);
-          const db = firestore.getFirestore(app);
-
-          firebaseApi = {
-            db,
-            collection: firestore.collection,
-            addDoc: firestore.addDoc,
-            getDocs: firestore.getDocs,
-            query: firestore.query,
-            orderBy: firestore.orderBy,
-            limit: firestore.limit,
-            serverTimestamp: firestore.serverTimestamp
-          };
-
-          leaderboardMode = 'remote';
-          leaderboardError = null;
-        } catch (error) {
-          console.warn('공용 랭킹 연결 실패. 로컬 테스트 랭킹으로 전환합니다.', error);
-          leaderboardMode = 'local';
-          leaderboardError = error;
-        }
-
-        updateLoadStatus();
-      }
-
-      let leaderboardReady = Promise.resolve();
-
-      function rankModeText() {
-        if (leaderboardMode === 'remote') return '공용 랭킹 연결 완료';
-        if (leaderboardError) return 'Firebase 설정 전 또는 연결 실패: 로컬 테스트 랭킹';
-        return '랭킹 연결 확인 중...';
-      }
-
-      const ASSETS = {
-        idle: 'assets/기본자세.png',
-        hit: 'assets/계란 맞는 모습.gif',
-        hitSprite: 'assets/계란 맞는 모습.sprite.png',
-        eggTop: 'assets/계란 안깐거 - 윗부분.png',
-        eggBottom: 'assets/계란 안깐거 - 아래부분.png',
-        peeled: 'assets/깐계란.gif'
-      };
-
-      const SOUNDS = {
-        intro: 'assets/sounds/카캇.mp3',
-        bgm: 'assets/sounds/Cats on Mars.mp3',
-        ready: 'assets/sounds/준비.mp3',
-        end: 'assets/sounds/쯔아아아앗_Vocals.mp3',
-        hitVoices: [
-          'assets/sounds/안됏_Vocals.mp3',
-          'assets/sounds/치_Vocals.mp3',
-          'assets/sounds/흐에에에_Vocals.mp3'
-        ]
-      };
-
-      const CROP = {
-        character: { sx: 440, sy: 120, sw: 1960, sh: 1840 },
-        hitSprite: { frameW: 520, frameH: 488, frames: 10, frameMs: 40 },
-        egg: { sx: 0, sy: 0, sw: 500, sh: 500 }
-      };
-
-      // 계란 맞는 모션은 새 GIF의 앞머리가 기본 자세보다 높아져
-      // 같은 위치에 그리면 화면 상단에서 잘려 보일 수 있습니다.
-      // 리소스 이미지는 그대로 두고, Canvas에 그리는 위치와 크기만 보정합니다.
-      const HIT_POSE_DRAW = {
-        scale: 0.96,
-        offsetX: 0,
-        offsetY: 30
-      };
-
-      const character = {
-        x: W / 2,
-        y: 406,
-        w: 520,
-        h: 488,
-        foreheadX: 0,
-        foreheadY: -118,
-        clickPadX: 250,
-        clickPadY: 236
+      const paths = {
+        idle: ASSET + '기본자세.png',
+        hitSprite: ASSET + '계란 맞는 모습.sprite.png',
+        hitGif: ASSET + '계란 맞는 모습.gif',
+        eggTop: ASSET + '계란 안깐거 - 윗부분.png',
+        eggBottom: ASSET + '계란 안깐거 - 아래부분.png',
+        peeledSprite: ASSET + '깐계란.sprite.png',
+        peeledGif: ASSET + '깐계란.gif'
       };
 
       const images = {};
-      const loaded = {};
-      const failed = {};
-      let assetReadyCount = 0;
-
-      let state = 'ready';
-      let score = 0;
-      let startTime = 0;
-      let lastFrame = performance.now();
-      let now = performance.now();
-      let hitPoseUntil = 0;
-      let hitPoseStart = 0;
-      let finalScore = 0;
-      let myRankId = null;
-      let particles = [];
-      let readyTimerId = null;
-
       const projectiles = [];
       const debris = [];
+      const impactMarks = [];
 
-      const audio = {
-        intro: null,
-        bgm: null,
-        ready: null,
-        end: null,
-        hitVoices: [],
-        currentHitVoice: null,
-        bgmEnabled: true,
-        introAttempted: false,
-        introCompleted: false
+      let state = 'loading';
+      let score = 0;
+      let startAt = 0;
+      let now = performance.now();
+      let prev = now;
+      let hitAnimStart = -Infinity;
+      let lastSavedId = null;
+
+      const char = {
+        // Full transparent frame destination. Idle PNG and hit sprite share the same 3:2 frame ratio.
+        x: 160,
+        y: 28,
+        w: 960,
+        h: 640,
+        foreheadSourceX: 1500,
+        foreheadSourceY: 585
       };
+
+      const cloud = {
+        ready: false,
+        failed: false,
+        app: null,
+        db: null,
+        addDoc: null,
+        collection: null,
+        serverTimestamp: null,
+        getDocs: null,
+        query: null,
+        orderBy: null,
+        limit: null
+      };
+
+      function loadImage(src) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = encodeURI(src);
+        });
+      }
 
       function rand(min, max) {
         return min + Math.random() * (max - min);
       }
 
-      function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
       }
 
-      function easeOutCubic(t) {
-        return 1 - Math.pow(1 - t, 3);
+      function show(el) { el.classList.remove('hidden'); }
+      function hide(el) { el.classList.add('hidden'); }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove('show'), 1500);
       }
 
-      function hide(el) {
-        el.classList.add('hidden');
-      }
-
-      function show(el) {
-        el.classList.remove('hidden');
-      }
-
-      function assetUrl(path) {
-        return encodeURI(path);
-      }
-
-      function createAudio(src, options = {}) {
-        const el = new Audio(assetUrl(src));
-        el.preload = 'auto';
-        el.loop = Boolean(options.loop);
-        el.volume = typeof options.volume === 'number' ? options.volume : 1;
-        return el;
-      }
-
-      function initAudio() {
-        audio.intro = createAudio(SOUNDS.intro, { volume: 0.95 });
-        audio.bgm = createAudio(SOUNDS.bgm, { volume: 0.46, loop: true });
-        audio.ready = createAudio(SOUNDS.ready, { volume: 1 });
-        audio.end = createAudio(SOUNDS.end, { volume: 1 });
-        audio.hitVoices = SOUNDS.hitVoices.map((src) => createAudio(src, { volume: 1 }));
-        updateBgmButton();
-      }
-
-      function tryPlay(el) {
-        if (!el) return Promise.resolve(false);
-        const result = el.play();
-        if (result && typeof result.catch === 'function') {
-          return result.then(() => true).catch((err) => {
-            // 브라우저 자동재생 정책, 파일 경로 오류, 미지원 코덱 등을 확인하기 쉽게 남깁니다.
-            console.warn('[audio play failed]', el.src, err && (err.name || err.message || err));
-            window.__EGG_GAME_LAST_AUDIO_ERROR__ = { src: el.src, error: err };
-            return false;
-          });
-        }
-        return Promise.resolve(true);
-      }
-
-      function stopAudio(el) {
-        if (!el) return;
-        el.pause();
-        try { el.currentTime = 0; } catch {}
-      }
-
-      function replaySound(el) {
-        if (!el) return;
-        stopAudio(el);
-        tryPlay(el);
-      }
-
-      function updateBgmButton() {
-        if (!bgmToggle) return;
-        bgmToggle.classList.toggle('is-off', !audio.bgmEnabled);
-        bgmToggle.setAttribute('aria-pressed', String(audio.bgmEnabled));
-        bgmToggle.textContent = audio.bgmEnabled ? '🔊 BGM' : '🔇 BGM';
-      }
-
-      function startBgm() {
-        if (!audio.bgmEnabled || !audio.bgm) return;
-        tryPlay(audio.bgm);
-      }
-
-      function stopBgm() {
-        if (audio.bgm) audio.bgm.pause();
-      }
-
-      function playIntroThenBgm() {
-        if (!audio.bgmEnabled) return;
-
-        // 이미 오프닝 효과음이 재생된 뒤라면 BGM만 유지합니다.
-        if (audio.introCompleted) {
-          startBgm();
-          return;
-        }
-
-        // 오프닝 효과음이 재생 중이면 BGM을 겹쳐 틀지 않고 끝날 때까지 기다립니다.
-        if (audio.introAttempted) {
-          return;
-        }
-
-        audio.introAttempted = true;
-        stopBgm();
-
-        if (!audio.intro) {
-          audio.introCompleted = true;
-          startBgm();
-          return;
-        }
-
-        stopAudio(audio.intro);
-        audio.intro.onended = () => {
-          audio.introCompleted = true;
-          startBgm();
-        };
-
-        tryPlay(audio.intro).then((played) => {
-          if (!played) {
-            audio.introAttempted = false;
-          }
-        });
-      }
-
-      function toggleBgm() {
-        audio.bgmEnabled = !audio.bgmEnabled;
-        updateBgmButton();
-
-        if (audio.bgmEnabled) {
-          playIntroThenBgm();
-        } else {
-          stopBgm();
-          stopAudio(audio.intro);
-        }
-      }
-
-      function playReadySound() {
-        replaySound(audio.ready);
-      }
-
-      function playEndSound() {
-        stopAudio(audio.currentHitVoice);
-        audio.currentHitVoice = null;
-        replaySound(audio.end);
-      }
-
-      function playRandomHitVoice() {
-        if (!audio.hitVoices.length) return;
-        stopAudio(audio.currentHitVoice);
-
-        const picked = audio.hitVoices[Math.floor(Math.random() * audio.hitVoices.length)];
-        audio.currentHitVoice = picked;
-        replaySound(picked);
-      }
-
-      function unlockAudioByUserGesture() {
-        playIntroThenBgm();
-      }
-
-      initAudio();
-      window.setTimeout(playIntroThenBgm, 180);
-      document.addEventListener('pointerdown', unlockAudioByUserGesture, { once: true });
-      document.addEventListener('keydown', unlockAudioByUserGesture, { once: true, capture: true });
-      bgmToggle.addEventListener('click', (evt) => {
-        evt.stopPropagation();
-        toggleBgm();
-      });
-
-      function loadImage(key, src) {
-        const img = new Image();
-        img.onload = () => {
-          loaded[key] = true;
-          failed[key] = false;
-          assetReadyCount++;
-          updateLoadStatus();
-        };
-        img.onerror = () => {
-          loaded[key] = false;
-          failed[key] = true;
-          assetReadyCount++;
-          updateLoadStatus();
-        };
-        img.src = assetUrl(src);
-        images[key] = img;
-      }
-
-      function updateLoadStatus() {
-        const total = Object.keys(ASSETS).length;
-        const failedCount = Object.values(failed).filter(Boolean).length;
-
-        if (assetReadyCount < total) {
-          loadStatus.textContent = `리소스 불러오는 중... (${assetReadyCount}/${total})`;
-          return;
-        }
-
-        if (failedCount > 0) {
-          loadStatus.textContent = `일부 리소스를 찾지 못했습니다. assets 폴더의 파일명을 확인하세요.`;
-          return;
-        }
-
-        loadStatus.textContent = `준비 완료! ${rankModeText()}`;
-      }
-
-      Object.entries(ASSETS).forEach(([key, src]) => loadImage(key, src));
-      leaderboardReady = initLeaderboard();
-
-      function resetHitGif() {
-        if (failed.hit) return;
-        const img = new Image();
-        img.onload = () => {
-          images.hit = img;
-          loaded.hit = true;
-        };
-        img.onerror = () => {
-          failed.hit = true;
-          loaded.hit = false;
-        };
-        img.src = assetUrl(ASSETS.hit) + '?restart=' + Date.now() + Math.random().toString(16).slice(2);
-      }
-
-      function getForeheadPoint() {
+      function sourceToCanvas(sx, sy) {
         return {
-          x: character.x + character.foreheadX,
-          y: character.y + character.foreheadY
+          x: char.x + (sx / 3000) * char.w,
+          y: char.y + (sy / 2000) * char.h
         };
       }
 
-      function getPointer(evt) {
+      function forehead() {
+        return sourceToCanvas(char.foreheadSourceX, char.foreheadSourceY);
+      }
+
+      function pointer(evt) {
         const rect = canvas.getBoundingClientRect();
-        const source = evt.touches ? evt.touches[0] : evt;
+        const t = evt.touches && evt.touches[0] ? evt.touches[0] : evt;
         return {
-          x: (source.clientX - rect.left) * W / rect.width,
-          y: (source.clientY - rect.top) * H / rect.height
+          x: (t.clientX - rect.left) * W / rect.width,
+          y: (t.clientY - rect.top) * H / rect.height
         };
       }
 
-      function isCharacterHit(x, y) {
+      function insideCharacter(x, y) {
+        // Clickable area roughly follows the visible character, not the transparent frame.
         return (
-          x >= character.x - character.clickPadX &&
-          x <= character.x + character.clickPadX &&
-          y >= character.y - character.clickPadY &&
-          y <= character.y + character.clickPadY
+          x >= char.x + char.w * 0.12 &&
+          x <= char.x + char.w * 0.86 &&
+          y >= char.y + char.h * 0.05 &&
+          y <= char.y + char.h * 0.98
         );
       }
 
-      function resetRoundObjects() {
-        score = 0;
-        finalScore = 0;
-        myRankId = null;
-        hitPoseUntil = 0;
-        hitPoseStart = 0;
-        projectiles.length = 0;
-        debris.length = 0;
-        particles = [];
-      }
-
-      function beginGameplay() {
-        state = 'playing';
-        startTime = performance.now();
-        lastFrame = startTime;
-        hide(readyOverlay);
+      function remainingSeconds() {
+        if (state !== 'playing') return GAME_SECONDS;
+        return clamp(GAME_SECONDS - (now - startAt) / 1000, 0, GAME_SECONDS);
       }
 
       function startGame() {
-        if (state === 'countdown') return;
-
-        state = 'countdown';
-        resetRoundObjects();
+        state = 'playing';
+        score = 0;
+        projectiles.length = 0;
+        debris.length = 0;
+        impactMarks.length = 0;
+        hitAnimStart = -Infinity;
+        startAt = performance.now();
+        prev = startAt;
         hide(startOverlay);
         hide(nameOverlay);
         hide(rankOverlay);
-        show(readyOverlay);
-        playIntroThenBgm();
-        playReadySound();
-
-        if (readyTimerId) window.clearTimeout(readyTimerId);
-        readyTimerId = window.setTimeout(() => {
-          beginGameplay();
-        }, 1150);
       }
 
-      function endGame() {
+      function finishGame() {
         if (state !== 'playing') return;
         state = 'ended';
-        finalScore = score;
-        playEndSound();
-        finalScoreText.textContent = `${finalScore}개`;
+        finalScoreText.textContent = `${score}개`;
         nameInput.value = '';
         show(nameOverlay);
-        window.setTimeout(() => nameInput.focus(), 80);
+        setTimeout(() => nameInput.focus(), 80);
       }
 
-      function onCanvasPointerDown(evt) {
+      function onCanvasClick(evt) {
         if (state !== 'playing') return;
-        evt.preventDefault();
-        const p = getPointer(evt);
-        if (!isCharacterHit(p.x, p.y)) return;
-
-        score += 1;
-        spawnEgg();
+        const p = pointer(evt);
+        if (!insideCharacter(p.x, p.y)) return;
+        launchEgg();
       }
 
-      canvas.addEventListener('pointerdown', onCanvasPointerDown, { passive: false });
-      startBtn.addEventListener('click', startGame);
-      againBtn.addEventListener('click', startGame);
-
-      saveRankBtn.addEventListener('click', () => {
-        saveRank();
-      });
-
-      nameInput.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Enter') saveRank();
-      });
-
-      resetRankBtn.addEventListener('click', () => {
-        renderRanking();
-      });
-
-      function spawnEgg() {
-        const target = getForeheadPoint();
-        const fromLeft = Math.random() < 0.5;
-        const sx = fromLeft ? rand(80, 230) : rand(W - 230, W - 80);
-        const sy = rand(FLOOR_Y - 44, FLOOR_Y + 8);
-        const tx = target.x + rand(-18, 18);
-        const ty = target.y + rand(-12, 16);
-
+      function launchEgg() {
+        const f = forehead();
+        const side = Math.random() < 0.5 ? -1 : 1;
+        const startX = f.x + side * rand(470, 610);
+        const startY = rand(470, 610);
         projectiles.push({
-          sx,
-          sy,
-          tx,
-          ty,
-          x: sx,
-          y: sy,
+          sx: startX,
+          sy: startY,
+          tx: f.x + rand(-10, 10),
+          ty: f.y + rand(-7, 8),
+          x: startX,
+          y: startY,
           t: 0,
-          duration: rand(0.22, 0.38),
-          arc: rand(86, 150),
-          size: rand(70, 86),
-          rot: rand(-0.6, 0.6),
-          spin: rand(-9, 9)
+          duration: rand(0.20, 0.31),
+          arc: rand(80, 142),
+          rot: rand(-0.4, 0.4),
+          spin: rand(-8, 8),
+          size: rand(66, 78)
         });
       }
 
       function onEggImpact(egg) {
-        // Canvas에서 GIF가 첫 프레임으로 고정되는 브라우저 이슈를 피하기 위해
-        // GIF에서 추출한 스프라이트를 수동 프레임 애니메이션으로 재생합니다.
-        hitPoseStart = now;
-        hitPoseUntil = now + (CROP.hitSprite.frames * CROP.hitSprite.frameMs);
-        resetHitGif();
-        playRandomHitVoice();
+        score += 1;
+        hitAnimStart = now;
+        const ix = egg.tx;
+        const iy = egg.ty;
 
-        spawnBurst(egg.tx, egg.ty);
+        impactMarks.push({ x: ix, y: iy, t: 0, life: 0.18 });
 
-        debris.push(makeDebris('top', egg.tx, egg.ty, {
-          vx: rand(-450, 160),
-          vy: rand(-760, -440),
-          size: egg.size * rand(0.9, 1.1),
-          bounce: rand(0.22, 0.38)
-        }));
-
-        debris.push(makeDebris('bottom', egg.tx, egg.ty + 4, {
-          vx: rand(-130, 470),
-          vy: rand(-690, -390),
-          size: egg.size * rand(0.9, 1.12),
+        spawnDebris('top', ix, iy, {
+          vx: rand(-420, 120),
+          vy: rand(-770, -500),
+          size: egg.size * rand(0.92, 1.1),
           bounce: rand(0.18, 0.34)
-        }));
+        });
 
-        debris.push(makeDebris('peeled', egg.tx + rand(-8, 8), egg.ty - 6, {
-          vx: rand(-420, 420),
-          vy: rand(-880, -560),
-          size: egg.size * rand(0.72, 0.9),
-          bounce: rand(0.42, 0.62)
-        }));
+        spawnDebris('bottom', ix, iy, {
+          vx: rand(-120, 450),
+          vy: rand(-690, -440),
+          size: egg.size * rand(0.92, 1.12),
+          bounce: rand(0.18, 0.34)
+        });
+
+        spawnDebris('peeled', ix, iy - 10, {
+          vx: rand(-360, 360),
+          vy: rand(-860, -580),
+          size: egg.size * rand(0.76, 0.92),
+          bounce: rand(0.45, 0.66)
+        });
+
+        if (debris.length > 240) debris.splice(0, debris.length - 240);
       }
 
-      function makeDebris(type, x, y, options) {
-        return {
+      function spawnDebris(type, x, y, override = {}) {
+        debris.push({
           type,
           x,
           y,
-          vx: options.vx,
-          vy: options.vy,
-          size: options.size,
-          bounce: options.bounce,
-          rot: rand(-1.5, 1.5),
-          vr: rand(-9, 9),
-          floor: FLOOR_Y + rand(-12, 14),
+          vx: override.vx ?? rand(-300, 300),
+          vy: override.vy ?? rand(-760, -420),
+          rot: rand(-Math.PI, Math.PI),
+          vr: rand(-8, 8),
+          size: override.size ?? rand(52, 78),
+          bounce: override.bounce ?? rand(0.24, 0.5),
+          born: now,
           age: 0,
           settled: false
-        };
-      }
-
-      function spawnBurst(x, y) {
-        for (let i = 0; i < 16; i++) {
-          particles.push({
-            x,
-            y,
-            vx: rand(-210, 210),
-            vy: rand(-260, 90),
-            r: rand(3, 8),
-            life: rand(0.18, 0.34),
-            age: 0
-          });
-        }
+        });
       }
 
       function update(dt) {
         now = performance.now();
 
-        if (state === 'playing') {
-          const elapsed = (now - startTime) / 1000;
-          if (elapsed >= GAME_SECONDS) {
-            endGame();
-          }
+        if (state === 'playing' && remainingSeconds() <= 0.001) {
+          finishGame();
         }
 
         for (let i = projectiles.length - 1; i >= 0; i--) {
           const egg = projectiles[i];
           egg.t += dt / egg.duration;
-
           const t = clamp(egg.t, 0, 1);
-          const e = easeOutCubic(t);
-          egg.x = egg.sx + (egg.tx - egg.sx) * e;
-          egg.y = egg.sy + (egg.ty - egg.sy) * e - Math.sin(Math.PI * t) * egg.arc;
+          const ease = 1 - Math.pow(1 - t, 3);
+
+          egg.x = egg.sx + (egg.tx - egg.sx) * ease;
+          egg.y = egg.sy + (egg.ty - egg.sy) * ease - Math.sin(Math.PI * t) * egg.arc;
           egg.rot += egg.spin * dt;
 
           if (egg.t >= 1) {
@@ -963,248 +541,128 @@
           }
         }
 
-        const gravity = 1740;
+        const gravity = 1750;
         for (let i = debris.length - 1; i >= 0; i--) {
-          const item = debris[i];
-          item.age += dt;
+          const d = debris[i];
+          d.age = (now - d.born) / 1000;
 
-          if (!item.settled) {
-            item.vy += gravity * dt;
-            item.x += item.vx * dt;
-            item.y += item.vy * dt;
-            item.rot += item.vr * dt;
+          if (!d.settled) {
+            d.vy += gravity * dt;
+            d.x += d.vx * dt;
+            d.y += d.vy * dt;
+            d.rot += d.vr * dt;
 
-            if (item.y + item.size * 0.34 >= item.floor) {
-              item.y = item.floor - item.size * 0.34;
-              item.vy = -Math.abs(item.vy) * item.bounce;
-              item.vx *= 0.70;
-              item.vr *= 0.68;
+            const floor = FLOOR_Y + (d.type === 'peeled' ? 0 : rand(-0.6, 0.6));
+            if (d.y + d.size * 0.34 >= floor) {
+              d.y = floor - d.size * 0.34;
+              d.vy = -Math.abs(d.vy) * d.bounce;
+              d.vx *= 0.72;
+              d.vr *= 0.72;
 
-              if (Math.abs(item.vy) < 95) {
-                item.vy = 0;
-                item.vx = 0;
-                item.vr = 0;
-                item.settled = true;
+              if (Math.abs(d.vy) < 115) {
+                d.settled = true;
+                d.vy = 0;
+                d.vx = 0;
+                d.vr = 0;
               }
             }
           }
 
-          if (item.x < -220 || item.x > W + 220 || item.y > H + 240 || item.age > 18 || debris.length > 240) {
+          if (d.x < -260 || d.x > W + 260 || d.y > H + 260 || d.age > 9) {
             debris.splice(i, 1);
           }
         }
 
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          p.age += dt;
-          p.vy += 680 * dt;
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-
-          if (p.age >= p.life) particles.splice(i, 1);
+        for (let i = impactMarks.length - 1; i >= 0; i--) {
+          impactMarks[i].t += dt;
+          if (impactMarks[i].t > impactMarks[i].life) impactMarks.splice(i, 1);
         }
       }
 
-      function draw() {
-        drawBackground();
-        drawHud();
-        drawDebris(true);
-        drawCharacter();
-        drawProjectiles();
-        drawParticles();
-        drawDebris(false);
-        if (state === 'ready') drawAimHint();
-      }
-
-      function roundRect(x, y, w, h, r) {
-        const rr = Math.min(r, w / 2, h / 2);
+      function drawRoundedRect(x, y, w, h, r) {
         ctx.beginPath();
-        ctx.moveTo(x + rr, y);
-        ctx.arcTo(x + w, y, x + w, y + h, rr);
-        ctx.arcTo(x + w, y + h, x, y + h, rr);
-        ctx.arcTo(x, y + h, x, y, rr);
-        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
         ctx.closePath();
       }
 
       function drawBackground() {
         ctx.clearRect(0, 0, W, H);
+        const bg = ctx.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0, '#fff0b8');
+        bg.addColorStop(0.48, '#ffd0a0');
+        bg.addColorStop(1, '#aee9d8');
 
-        const gradient = ctx.createLinearGradient(0, 0, W, H);
-        gradient.addColorStop(0, '#fff4bc');
-        gradient.addColorStop(0.48, '#ffd0a2');
-        gradient.addColorStop(1, '#9debd7');
-        ctx.fillStyle = gradient;
-        roundRect(26, 26, W - 52, H - 52, 36);
+        drawRoundedRect(14, 8, W - 28, H - 20, 34);
+        ctx.fillStyle = bg;
         ctx.fill();
 
         ctx.save();
-        ctx.globalAlpha = 0.26;
+        ctx.globalAlpha = 0.28;
         const blobs = [
-          [152, 108, 58, 38, '#fff'], [1110, 104, 74, 46, '#fff4a2'],
-          [226, 540, 82, 52, '#fff'], [1058, 538, 92, 60, '#fff'],
-          [350, 170, 42, 26, '#ffe78a'], [923, 236, 48, 32, '#fff'],
-          [188, 285, 34, 22, '#fff3a6'], [1132, 332, 48, 32, '#ffe997']
+          [150, 100, 58, 44], [360, 185, 48, 28], [920, 240, 50, 33], [1075, 120, 75, 52],
+          [230, 552, 88, 52], [804, 584, 155, 56], [1088, 432, 95, 58], [642, 118, 90, 38]
         ];
-        for (const [x, y, rx, ry, color] of blobs) {
-          ctx.fillStyle = color;
+        for (const [x, y, rx, ry] of blobs) {
           ctx.beginPath();
           ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
           ctx.fill();
         }
         ctx.restore();
 
         ctx.save();
-        ctx.fillStyle = 'rgba(255, 255, 255, .42)';
+        ctx.globalAlpha = 0.28;
+        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.ellipse(W / 2, FLOOR_Y + 26, 430, 62, 0, 0, Math.PI * 2);
+        ctx.ellipse(W / 2, FLOOR_Y + 18, 430, 62, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = 'rgba(123, 78, 32, .13)';
+        ctx.strokeStyle = 'rgba(121, 80, 34, .22)';
         ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.moveTo(82, FLOOR_Y + 11);
-        ctx.bezierCurveTo(350, FLOOR_Y - 22, 880, FLOOR_Y + 52, 1198, FLOOR_Y + 4);
+        ctx.moveTo(70, FLOOR_Y + 6);
+        ctx.bezierCurveTo(330, FLOOR_Y - 28, 850, FLOOR_Y + 46, 1210, FLOOR_Y - 4);
         ctx.stroke();
         ctx.restore();
       }
 
-      function drawHud() {
-        const remaining = state === 'playing'
-          ? Math.max(0, GAME_SECONDS - (now - startTime) / 1000)
-          : state === 'ended'
-            ? 0
-            : GAME_SECONDS;
-
-        drawPill(48, 44, 210, 62, `⏱ ${remaining.toFixed(1)}초`);
-        drawPill(W - 260, 112, 212, 62, `🥚 ${score}개`);
-      }
-
-      function drawPill(x, y, w, h, text) {
-        ctx.save();
-        ctx.shadowColor = 'rgba(92, 54, 18, .18)';
-        ctx.shadowBlur = 24;
-        ctx.shadowOffsetY = 8;
-        ctx.fillStyle = 'rgba(255,255,255,.84)';
-        roundRect(x, y, w, h, 24);
-        ctx.fill();
-
-        ctx.shadowColor = 'transparent';
-        ctx.fillStyle = '#3b2a1c';
-        ctx.font = '900 28px system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, x + w / 2, y + h / 2 + 1);
-        ctx.restore();
-      }
-
       function drawCharacter() {
-        const isHitPose = now < hitPoseUntil;
-        const idleImg = images.idle;
-        const gifImg = images.hit;
-
+        const hitAge = now - hitAnimStart;
+        const useHit = hitAge >= 0 && hitAge < HIT_SPRITE.frames * HIT_SPRITE.frameMs + 80 && images.hitSprite;
         ctx.save();
+        ctx.imageSmoothingEnabled = true;
 
-        ctx.fillStyle = 'rgba(97, 53, 16, .16)';
-        ctx.beginPath();
-        ctx.ellipse(character.x, FLOOR_Y + 16, 240, 42, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (isHitPose && images.hitSprite && images.hitSprite.complete && loaded.hitSprite && !failed.hitSprite) {
-          const elapsed = Math.max(0, now - hitPoseStart);
-          const frameIndex = Math.min(
-            CROP.hitSprite.frames - 1,
-            Math.floor(elapsed / CROP.hitSprite.frameMs)
-          );
-
-          const hitDrawW = character.w * HIT_POSE_DRAW.scale;
-          const hitDrawH = character.h * HIT_POSE_DRAW.scale;
-          const hitDrawX = character.x - hitDrawW / 2 + HIT_POSE_DRAW.offsetX;
-          const hitDrawY = character.y - hitDrawH / 2 + HIT_POSE_DRAW.offsetY;
-
+        if (useHit) {
+          const frame = Math.min(HIT_SPRITE.frames - 1, Math.floor(hitAge / HIT_SPRITE.frameMs));
           ctx.drawImage(
             images.hitSprite,
-            frameIndex * CROP.hitSprite.frameW,
-            0,
-            CROP.hitSprite.frameW,
-            CROP.hitSprite.frameH,
-            hitDrawX,
-            hitDrawY,
-            hitDrawW,
-            hitDrawH
+            frame * HIT_SPRITE.frameW, 0,
+            HIT_SPRITE.frameW, HIT_SPRITE.frameH,
+            char.x, char.y, char.w, char.h
           );
-        } else {
-          const useGifFallback = isHitPose && gifImg && gifImg.complete && loaded.hit && !failed.hit;
-          const img = useGifFallback ? gifImg : idleImg;
-          const key = useGifFallback ? 'hit' : 'idle';
-          const hasImage = img && img.complete && loaded[key] && !failed[key];
-
-          if (hasImage) {
-            ctx.drawImage(
-              img,
-              CROP.character.sx,
-              CROP.character.sy,
-              CROP.character.sw,
-              CROP.character.sh,
-              character.x - character.w / 2,
-              character.y - character.h / 2,
-              character.w,
-              character.h
-            );
-          } else {
-            drawFallbackCharacter();
-          }
+        } else if (images.idle) {
+          ctx.drawImage(images.idle, char.x, char.y, char.w, char.h);
         }
 
         ctx.restore();
       }
 
-      function drawFallbackCharacter() {
+      function drawEggTexture(img, x, y, size, rot = 0) {
+        if (!img) return;
         ctx.save();
-        ctx.translate(character.x, character.y);
-        ctx.fillStyle = '#ffd64d';
-        ctx.beginPath();
-        ctx.ellipse(0, 74, 185, 210, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#fff6dc';
-        roundRect(-105, -54, 210, 270, 44);
-        ctx.fill();
-
-        ctx.fillStyle = '#ffe4e7';
-        ctx.beginPath();
-        ctx.ellipse(-64, -20, 38, 25, -0.18, 0, Math.PI * 2);
-        ctx.ellipse(64, -20, 38, 25, 0.18, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#26375d';
-        ctx.beginPath();
-        ctx.arc(-44, -62, 15, 0, Math.PI * 2);
-        ctx.arc(44, -62, 15, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#ff7297';
-        ctx.beginPath();
-        ctx.ellipse(0, -42, 25, 38, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#f4f4ee';
-        ctx.beginPath();
-        ctx.ellipse(0, -128, 130, 62, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.translate(x, y);
+        ctx.rotate(rot);
+        ctx.drawImage(img, -size / 2, -size / 2, size, size);
         ctx.restore();
       }
 
-      function drawAimHint() {
-        const p = getForeheadPoint();
-        ctx.save();
-        ctx.globalAlpha = 0.36 + Math.sin(now / 220) * 0.08;
-        ctx.strokeStyle = '#e87717';
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 34, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
+      function drawWholeEgg(x, y, size, rot) {
+        drawEggTexture(images.eggBottom, x, y, size, rot);
+        drawEggTexture(images.eggTop, x, y, size, rot);
       }
 
       function drawProjectiles() {
@@ -1213,235 +671,260 @@
         }
       }
 
-      function drawWholeEgg(x, y, size, rot) {
+      function drawImpactMarks() {
         ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(rot);
-
-        // 두 껍질 이미지는 같은 500x500 투명 캔버스 기준으로 제작되어 있으므로
-        // 같은 위치/크기로 겹쳐 그려야 유격 없이 완전한 계란이 됩니다.
-        drawAssetImage('eggBottom', -size / 2, -size / 2, size, size);
-        drawAssetImage('eggTop', -size / 2, -size / 2, size, size);
-
+        for (const b of impactMarks) {
+          const p = b.t / b.life;
+          const r = 10 + p * 30;
+          ctx.globalAlpha = 1 - p;
+          ctx.strokeStyle = '#ff9b25';
+          ctx.lineWidth = 6;
+          for (let i = 0; i < 7; i++) {
+            const a = i * Math.PI * 2 / 7 + 0.2;
+            ctx.beginPath();
+            ctx.moveTo(b.x + Math.cos(a) * r * 0.3, b.y + Math.sin(a) * r * 0.3);
+            ctx.lineTo(b.x + Math.cos(a) * r, b.y + Math.sin(a) * r);
+            ctx.stroke();
+          }
+        }
         ctx.restore();
       }
 
-      function drawDebris(behindCharacter) {
-        for (const item of debris) {
-          // 이마 충돌 직후의 계란 조각은 반드시 캐릭터 앞에서 보이도록 둡니다.
-          // 충분히 떨어진 뒤 머리 위쪽에 남아 있는 조각만 뒤 레이어로 보냅니다.
-          const shouldBeBehind = item.age > 0.55 && item.y < character.y + 40;
-          if (behindCharacter !== shouldBeBehind) continue;
-
-          ctx.save();
-          ctx.translate(item.x, item.y);
-          ctx.rotate(item.rot);
-
-          if (item.type === 'top') {
-            drawAssetImage('eggTop', -item.size / 2, -item.size / 2, item.size, item.size);
-          } else if (item.type === 'bottom') {
-            drawAssetImage('eggBottom', -item.size / 2, -item.size / 2, item.size, item.size);
+      function drawDebris() {
+        for (const d of debris) {
+          if (d.type === 'top') {
+            drawEggTexture(images.eggTop, d.x, d.y, d.size, d.rot);
+          } else if (d.type === 'bottom') {
+            drawEggTexture(images.eggBottom, d.x, d.y, d.size, d.rot);
           } else {
-            drawAssetImage('peeled', -item.size / 2, -item.size / 2, item.size, item.size);
+            drawPeeled(d);
           }
+        }
+      }
 
+      function drawPeeled(d) {
+        if (images.peeledSprite) {
+          const frame = Math.floor((d.age * 1000) / PEELED_SPRITE.frameMs) % PEELED_SPRITE.frames;
+          ctx.save();
+          ctx.translate(d.x, d.y);
+          ctx.rotate(d.rot);
+          ctx.drawImage(
+            images.peeledSprite,
+            frame * PEELED_SPRITE.frameW, 0,
+            PEELED_SPRITE.frameW, PEELED_SPRITE.frameH,
+            -d.size / 2, -d.size / 2,
+            d.size, d.size
+          );
           ctx.restore();
         }
       }
 
-      function drawAssetImage(key, x, y, w, h) {
-        const img = images[key];
-        if (img && img.complete && loaded[key] && !failed[key]) {
-          ctx.drawImage(img, CROP.egg.sx, CROP.egg.sy, CROP.egg.sw, CROP.egg.sh, x, y, w, h);
-          return;
-        }
+      function drawHUD() {
+        drawPill(34, 48, 210, 64, `⏱️ ${remainingSeconds().toFixed(1)}초`);
+        drawPill(W - 220, 48, 186, 64, `🥚 ${score}개`);
+      }
 
+      function drawPill(x, y, w, h, text) {
         ctx.save();
-        ctx.fillStyle = key === 'peeled' ? '#f7c48d' : '#d98e63';
-        ctx.strokeStyle = '#75443d';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.ellipse(x + w / 2, y + h / 2, w * 0.34, h * 0.39, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,.90)';
+        ctx.shadowColor = 'rgba(96, 62, 24, .16)';
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetY = 8;
+        drawRoundedRect(x, y, w, h, 20);
         ctx.fill();
-        ctx.stroke();
+
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = '#352518';
+        ctx.font = '900 26px system-ui, -apple-system, Segoe UI, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x + w / 2, y + h / 2 + 1);
         ctx.restore();
       }
 
-      function drawParticles() {
-        ctx.save();
-        for (const p of particles) {
-          const alpha = 1 - p.age / p.life;
-          ctx.globalAlpha = Math.max(0, alpha);
-          ctx.fillStyle = '#fff2b8';
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
+      function render() {
+        drawBackground();
+        drawCharacter();
+        drawImpactMarks();
+        drawProjectiles();
+        drawDebris();
+        drawHUD();
       }
 
-      function getLocalRanks() {
+      function tick(t) {
+        const dt = Math.min(0.033, (t - prev) / 1000 || 0);
+        prev = t;
+        update(dt);
+        render();
+        requestAnimationFrame(tick);
+      }
+
+      function localRanks() {
         try {
-          const raw = localStorage.getItem(LOCAL_RANK_KEY);
-          const parsed = raw ? JSON.parse(raw) : [];
-          if (!Array.isArray(parsed)) return [];
-          return parsed
-            .filter((r) => r && typeof r.name === 'string' && Number.isFinite(r.score))
-            .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
-            .slice(0, 30);
-        } catch {
+          return JSON.parse(localStorage.getItem('eggForeheadRanks') || '[]');
+        } catch (_) {
           return [];
         }
       }
 
-      function saveLocalRank(name, scoreValue, id) {
-        const ranks = getLocalRanks();
-        ranks.push({
-          id,
-          name,
-          score: scoreValue,
-          createdAt: Date.now()
-        });
-
-        const sorted = ranks
-          .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
-          .slice(0, 30);
-
-        localStorage.setItem(LOCAL_RANK_KEY, JSON.stringify(sorted));
+      function saveLocalRank(name, scoreValue) {
+        const id = 'local-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+        const ranks = localRanks();
+        ranks.push({ id, name, score: scoreValue, createdAt: Date.now() });
+        ranks.sort((a, b) => b.score - a.score || a.createdAt - b.createdAt);
+        localStorage.setItem('eggForeheadRanks', JSON.stringify(ranks.slice(0, 50)));
+        return id;
       }
 
-      function scoresCollection() {
-        return firebaseApi.collection(firebaseApi.db, ...LEADERBOARD_PATH);
+      async function initCloudRanking() {
+        const cfg = window.EGG_GAME_FIREBASE_CONFIG;
+        if (!cfg || !cfg.apiKey || !cfg.projectId) return;
+
+        try {
+          const appMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+          const fsMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+          cloud.app = appMod.initializeApp(cfg);
+          cloud.db = fsMod.getFirestore(cloud.app);
+          cloud.addDoc = fsMod.addDoc;
+          cloud.collection = fsMod.collection;
+          cloud.serverTimestamp = fsMod.serverTimestamp;
+          cloud.getDocs = fsMod.getDocs;
+          cloud.query = fsMod.query;
+          cloud.orderBy = fsMod.orderBy;
+          cloud.limit = fsMod.limit;
+          cloud.ready = true;
+        } catch (err) {
+          console.warn('[ranking] cloud ranking disabled:', err);
+          cloud.failed = true;
+        }
       }
 
-      function normalizeRemoteRank(docSnap) {
-        const data = docSnap.data();
-        const createdAt = data.createdAt && typeof data.createdAt.toMillis === 'function'
-          ? data.createdAt.toMillis()
-          : 0;
-
-        return {
-          id: docSnap.id,
-          name: typeof data.name === 'string' ? data.name : '익명',
-          score: Number.isFinite(data.score) ? data.score : 0,
-          createdAt
-        };
-      }
-
-      async function getRanks() {
-        await leaderboardReady;
-
-        if (leaderboardMode === 'remote' && firebaseApi) {
+      async function saveRank(name, scoreValue) {
+        if (cloud.ready) {
           try {
-            const q = firebaseApi.query(
-              scoresCollection(),
-              firebaseApi.orderBy('score', 'desc'),
-              firebaseApi.limit(30)
-            );
-            const snapshot = await firebaseApi.getDocs(q);
-            return snapshot.docs
-              .map(normalizeRemoteRank)
-              .filter((r) => r && typeof r.name === 'string' && Number.isFinite(r.score))
-              .sort((a, b) => b.score - a.score || a.createdAt - b.createdAt)
-              .slice(0, 10);
-          } catch (error) {
-            console.warn('공용 랭킹을 불러오지 못했습니다. 로컬 테스트 랭킹을 표시합니다.', error);
-            leaderboardMode = 'local';
-            leaderboardError = error;
-            updateLoadStatus();
+            const ref = await cloud.addDoc(cloud.collection(cloud.db, 'rankings'), {
+              name,
+              score: scoreValue,
+              duration: GAME_SECONDS,
+              createdAt: cloud.serverTimestamp()
+            });
+            return ref.id;
+          } catch (err) {
+            console.warn('[ranking] cloud save failed, use local:', err);
           }
         }
-
-        return getLocalRanks().slice(0, 10);
+        return saveLocalRank(name, scoreValue);
       }
 
-      async function saveRank() {
-        const safeName = nameInput.value.trim().replace(/[<>]/g, '').slice(0, 12) || '익명';
-        myRankId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      async function loadRanks() {
+        if (cloud.ready) {
+          try {
+            const q = cloud.query(
+              cloud.collection(cloud.db, 'rankings'),
+              cloud.orderBy('score', 'desc'),
+              cloud.limit(10)
+            );
+            const snap = await cloud.getDocs(q);
+            return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          } catch (err) {
+            console.warn('[ranking] cloud load failed, use local:', err);
+          }
+        }
+        return localRanks().slice(0, 10);
+      }
+
+      function renderRanks(ranks) {
+        rankList.innerHTML = '';
+
+        if (!ranks.length) {
+          const empty = document.createElement('div');
+          empty.className = 'rank-empty';
+          empty.textContent = '아직 등록된 기록이 없습니다.';
+          rankList.appendChild(empty);
+          return;
+        }
+
+        ranks.slice(0, 10).forEach((rank, index) => {
+          const li = document.createElement('li');
+          if (rank.id === lastSavedId) li.classList.add('me');
+
+          const pos = document.createElement('span');
+          pos.textContent = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}위`;
+
+          const name = document.createElement('span');
+          name.textContent = String(rank.name || '익명').slice(0, 12);
+
+          const point = document.createElement('span');
+          point.textContent = `${Number(rank.score || 0)}개`;
+          point.style.textAlign = 'right';
+
+          li.append(pos, name, point);
+          rankList.appendChild(li);
+        });
+      }
+
+      async function showRanks() {
+        const ranks = await loadRanks();
+        renderRanks(ranks);
+        show(rankOverlay);
+      }
+
+      async function submitName() {
+        if (state !== 'ended') return;
+
+        const name = nameInput.value.trim().slice(0, 12);
+        if (!name) {
+          showToast('이름을 입력해주세요');
+          nameInput.focus();
+          return;
+        }
 
         saveRankBtn.disabled = true;
         saveRankBtn.textContent = '등록 중...';
 
         try {
-          await leaderboardReady;
-
-          if (leaderboardMode === 'remote' && firebaseApi) {
-            const docRef = await firebaseApi.addDoc(scoresCollection(), {
-              name: safeName,
-              score: finalScore,
-              durationSec: GAME_SECONDS,
-              createdAt: firebaseApi.serverTimestamp()
-            });
-            myRankId = docRef.id;
-          } else {
-            saveLocalRank(safeName, finalScore, myRankId);
-          }
-
+          lastSavedId = await saveRank(name, score);
           hide(nameOverlay);
-          show(rankOverlay);
-          await renderRanking();
-        } catch (error) {
-          console.warn('랭킹 저장 실패. 로컬 테스트 랭킹에 저장합니다.', error);
-          leaderboardMode = 'local';
-          leaderboardError = error;
-          saveLocalRank(safeName, finalScore, myRankId);
-
-          hide(nameOverlay);
-          show(rankOverlay);
-          await renderRanking();
-
-          window.alert('공용 랭킹 저장에 실패해 이 브라우저의 테스트 랭킹에 임시 저장했습니다. Firebase 설정과 Firestore 규칙을 확인해 주세요.');
+          await showRanks();
         } finally {
           saveRankBtn.disabled = false;
-          saveRankBtn.textContent = '공용 랭킹 등록';
+          saveRankBtn.textContent = '랭킹 등록';
         }
       }
 
-      async function renderRanking() {
-        rankList.innerHTML = '<li><span>-</span><span class="rank-name">랭킹 불러오는 중...</span><span class="rank-score">-</span></li>';
+      async function boot() {
+        const entries = await Promise.all(Object.entries(paths).map(async ([key, path]) => [key, await loadImage(path)]));
+        for (const [key, img] of entries) images[key] = img;
 
-        const ranks = await getRanks();
-        rankList.innerHTML = '';
-
-        if (ranks.length === 0) {
-          const li = document.createElement('li');
-          li.innerHTML = '<span>-</span><span class="rank-name">아직 기록이 없습니다</span><span class="rank-score">0개</span>';
-          rankList.appendChild(li);
-          return;
-        }
-
-        ranks.forEach((rank, index) => {
-          const li = document.createElement('li');
-          if (rank.id === myRankId) li.classList.add('me');
-
-          const no = document.createElement('span');
-          no.textContent = `${index + 1}위`;
-
-          const name = document.createElement('span');
-          name.className = 'rank-name';
-          name.textContent = rank.name;
-
-          const scoreEl = document.createElement('span');
-          scoreEl.className = 'rank-score';
-          scoreEl.textContent = `${rank.score}개`;
-
-          li.append(no, name, scoreEl);
-          rankList.appendChild(li);
+        state = 'start';
+        await initCloudRanking();
+        requestAnimationFrame((t) => {
+          prev = t;
+          now = t;
+          requestAnimationFrame(tick);
         });
       }
 
-      function loop(timestamp) {
-        const dt = Math.min(0.05, (timestamp - lastFrame) / 1000 || 0);
-        lastFrame = timestamp;
+      startBtn.addEventListener('click', startGame);
+      canvas.addEventListener('click', onCanvasClick);
+      canvas.addEventListener('touchstart', (evt) => {
+        evt.preventDefault();
+        onCanvasClick(evt);
+      }, { passive: false });
 
-        update(dt);
-        draw();
+      saveRankBtn.addEventListener('click', submitName);
+      nameInput.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Enter') submitName();
+      });
+      againBtn.addEventListener('click', () => {
+        hide(rankOverlay);
+        show(startOverlay);
+        state = 'start';
+      });
+      refreshRankBtn.addEventListener('click', showRanks);
 
-        requestAnimationFrame(loop);
-      }
-
-      requestAnimationFrame(loop);
-      updateLoadStatus();
+      boot();
     })();
   </script>
 </body>
