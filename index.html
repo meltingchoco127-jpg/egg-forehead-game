@@ -60,6 +60,52 @@
 
     .hidden { display: none !important; }
 
+    .bgm-toggle {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top));
+      right: max(16px, env(safe-area-inset-right));
+      z-index: 20;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1;
+      color: #61320d;
+      background: rgba(255,255,255,.92);
+      border: 2px solid rgba(255, 177, 62, .46);
+      box-shadow: 0 5px 0 rgba(172, 82, 20, .75), 0 12px 26px rgba(86, 54, 24, .15);
+    }
+
+    .bgm-toggle.off {
+      opacity: .65;
+      filter: grayscale(.35);
+    }
+
+    .ready-layer {
+      z-index: 18;
+      background: rgba(255, 236, 176, .18);
+      backdrop-filter: blur(1px);
+    }
+
+    .ready-bubble {
+      pointer-events: none;
+      padding: 28px 52px 32px;
+      border-radius: 34px;
+      background: rgba(255,255,255,.92);
+      border: 3px solid rgba(255, 170, 43, .52);
+      box-shadow: 0 20px 70px rgba(104, 66, 26, .22);
+      color: #e46d11;
+      font-size: clamp(58px, 12vw, 116px);
+      font-weight: 1000;
+      letter-spacing: -0.06em;
+      text-shadow: 0 5px 0 rgba(255, 219, 132, .75);
+      animation: readyPop .86s ease both;
+    }
+
+    @keyframes readyPop {
+      0% { transform: scale(.72); opacity: 0; }
+      35% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
     .card {
       width: min(92vw, 560px);
       padding: 30px 30px 28px;
@@ -218,6 +264,12 @@
     <canvas id="game" width="1280" height="720" aria-label="계란 이마 챌린지 게임 화면"></canvas>
   </main>
 
+  <button id="bgmToggle" class="bgm-toggle" type="button" aria-pressed="true" aria-label="BGM 켜기 또는 끄기">🔊 BGM</button>
+
+  <section class="overlay ready-layer hidden" id="readyOverlay" aria-live="assertive">
+    <div class="ready-bubble">준비!</div>
+  </section>
+
   <section class="overlay" id="startOverlay" aria-live="polite">
     <div class="card">
       <div class="badge">🥚 30초 클릭 챌린지</div>
@@ -257,9 +309,11 @@
     const H = canvas.height;
 
     const startOverlay = document.getElementById('startOverlay');
+    const readyOverlay = document.getElementById('readyOverlay');
     const nameOverlay = document.getElementById('nameOverlay');
     const rankOverlay = document.getElementById('rankOverlay');
     const startBtn = document.getElementById('startBtn');
+    const bgmToggle = document.getElementById('bgmToggle');
     const saveRankBtn = document.getElementById('saveRankBtn');
     const againBtn = document.getElementById('againBtn');
     const refreshRankBtn = document.getElementById('refreshRankBtn');
@@ -271,6 +325,7 @@
     const GAME_SECONDS = 30;
     const FLOOR_Y = 650;
     const ASSET = './assets/';
+    const SOUND = './assets/sounds/';
 
     const SOURCE = { w: 3000, h: 2000 };
 
@@ -299,13 +354,20 @@
     let prev = now;
     let hitAnimStart = -Infinity;
     let lastSavedId = null;
+    let readyTimer = null;
+
+    let bgmEnabled = true;
+    let introAttempted = false;
+    let currentHitSound = null;
+    const sounds = {};
 
     const char = {
       x: 190,
       y: 48,
       w: 945,
       h: 630,
-      foreheadSourceX: 1500,
+      // 이마 충돌 지점을 기존보다 살짝 왼쪽으로 이동했습니다.
+      foreheadSourceX: 1380,
       foreheadSourceY: 585,
       visibleBBox: { x1: 478, y1: 49, x2: 2332, y2: 1916 }
     };
@@ -332,6 +394,128 @@
       show(toast);
       clearTimeout(say.timer);
       say.timer = setTimeout(() => hide(toast), 1600);
+    }
+
+    function setupAudio() {
+      sounds.open = new Audio(SOUND + '카캇.mp3');
+      sounds.bgm = new Audio(SOUND + 'Cats on Mars.mp3');
+      sounds.ready = new Audio(SOUND + '준비.mp3');
+      sounds.finish = new Audio(SOUND + '쯔아아아앗_Vocals.mp3');
+      sounds.hit = [
+        new Audio(SOUND + '안됏_Vocals.mp3'),
+        new Audio(SOUND + '치_Vocals.mp3'),
+        new Audio(SOUND + '흐에에에_Vocals.mp3')
+      ];
+
+      sounds.bgm.loop = true;
+      sounds.bgm.volume = 0.42;
+      sounds.open.volume = 0.82;
+      sounds.ready.volume = 0.90;
+      sounds.finish.volume = 0.92;
+      for (const h of sounds.hit) h.volume = 0.86;
+
+      for (const a of [sounds.open, sounds.bgm, sounds.ready, sounds.finish, ...sounds.hit]) {
+        a.preload = 'auto';
+      }
+    }
+
+    function safePlay(audioEl) {
+      if (!audioEl) return Promise.resolve(false);
+      try {
+        const result = audioEl.play();
+        if (result && typeof result.catch === 'function') {
+          return result.then(() => true).catch(err => {
+            console.debug('[audio play blocked]', err && err.name ? err.name : err);
+            return false;
+          });
+        }
+        return Promise.resolve(true);
+      } catch (err) {
+        console.debug('[audio play failed]', err);
+        return Promise.resolve(false);
+      }
+    }
+
+    function replay(audioEl) {
+      if (!audioEl) return Promise.resolve(false);
+      try {
+        audioEl.pause();
+        audioEl.currentTime = 0;
+      } catch (_) {}
+      return safePlay(audioEl);
+    }
+
+    function updateBgmButton() {
+      bgmToggle.classList.toggle('off', !bgmEnabled);
+      bgmToggle.setAttribute('aria-pressed', String(bgmEnabled));
+      bgmToggle.textContent = bgmEnabled ? '🔊 BGM' : '🔇 BGM';
+    }
+
+    async function playBgm() {
+      if (!bgmEnabled || !sounds.bgm) return false;
+      return safePlay(sounds.bgm);
+    }
+
+    async function tryIntroAudio() {
+      if (introAttempted || !bgmEnabled) return;
+      introAttempted = true;
+
+      const opened = await replay(sounds.open);
+      if (opened && sounds.open) {
+        const waitMs = Math.min(900, Math.max(120, (sounds.open.duration || 0.45) * 1000));
+        setTimeout(() => playBgm(), waitMs);
+      } else {
+        // 브라우저 자동재생 차단 시에는 첫 클릭 이후 BGM만 재시도합니다.
+        introAttempted = false;
+      }
+    }
+
+    function ensureAudioAfterGesture() {
+      if (!introAttempted) {
+        tryIntroAudio();
+      } else {
+        playBgm();
+      }
+    }
+
+    function playReadySound() {
+      replay(sounds.ready);
+    }
+
+    function playFinishSound() {
+      if (currentHitSound) {
+        try {
+          currentHitSound.pause();
+          currentHitSound.currentTime = 0;
+        } catch (_) {}
+        currentHitSound = null;
+      }
+      replay(sounds.finish);
+    }
+
+    function playHitSound() {
+      if (!sounds.hit || !sounds.hit.length) return;
+      if (currentHitSound) {
+        try {
+          currentHitSound.pause();
+          currentHitSound.currentTime = 0;
+        } catch (_) {}
+      }
+
+      currentHitSound = sounds.hit[Math.floor(Math.random() * sounds.hit.length)];
+      replay(currentHitSound);
+    }
+
+    function toggleBgm() {
+      bgmEnabled = !bgmEnabled;
+      if (!bgmEnabled) {
+        try {
+          sounds.bgm.pause();
+        } catch (_) {}
+      } else {
+        ensureAudioAfterGesture();
+      }
+      updateBgmButton();
     }
 
     function loadImage(src) {
@@ -393,23 +577,41 @@
       return clamp(GAME_SECONDS - (now - startAt) / 1000, 0, GAME_SECONDS);
     }
 
-    function startGame() {
-      state = 'playing';
+    function clearRound() {
       score = 0;
       projectiles.length = 0;
       debris.length = 0;
       impactMarks.length = 0;
       hitAnimStart = -Infinity;
+    }
+
+    function beginPlaying() {
+      state = 'playing';
       startAt = performance.now();
       prev = startAt;
+      hide(readyOverlay);
+    }
+
+    function startGame() {
+      if (state === 'ready' || state === 'playing') return;
+
+      ensureAudioAfterGesture();
+      clearRound();
+      state = 'ready';
       hide(startOverlay);
       hide(nameOverlay);
       hide(rankOverlay);
+      show(readyOverlay);
+      playReadySound();
+
+      clearTimeout(readyTimer);
+      readyTimer = setTimeout(beginPlaying, 1050);
     }
 
     function finishGame() {
       if (state !== 'playing') return;
       state = 'ended';
+      playFinishSound();
       finalScoreText.textContent = `${score}개`;
       nameInput.value = '';
       show(nameOverlay);
@@ -439,7 +641,7 @@
         t: 0,
         duration: rand(0.20, 0.32),
         arc: rand(80, 145),
-        size: rand(58, 72),
+        size: rand(84, 104),
         rot: rand(-0.35, 0.35),
         spin: rand(-6, 6)
       });
@@ -448,6 +650,7 @@
     function hitEgg(egg) {
       score += 1;
       hitAnimStart = now;
+      playHitSound();
 
       impactMarks.push({
         x: egg.tx,
@@ -470,7 +673,7 @@
         vy: rand(-720, -420),
         rot: rand(-1.0, 1.0),
         vr: rand(-9, 9),
-        size: egg.size * rand(0.90, 1.12),
+        size: egg.size * rand(1.02, 1.30),
         bounce: rand(0.22, 0.38),
         settled: false
       });
@@ -484,7 +687,7 @@
         vy: rand(-680, -380),
         rot: rand(-1.0, 1.0),
         vr: rand(-9, 9),
-        size: egg.size * rand(0.90, 1.12),
+        size: egg.size * rand(1.02, 1.30),
         bounce: rand(0.20, 0.36),
         settled: false
       });
@@ -498,10 +701,11 @@
         vy: rand(-820, -560),
         rot: rand(-0.7, 0.7),
         vr: rand(-5, 5),
-        size: egg.size * rand(0.82, 1.00),
+        size: egg.size * rand(0.98, 1.22),
         bounce: rand(0.42, 0.62),
         settled: false,
-        frameOffset: Math.floor(rand(0, PEELED_SPRITE.frames))
+        frameOffset: Math.floor(rand(0, PEELED_SPRITE.frames)),
+        settleFrame: 0
       });
     }
 
@@ -550,6 +754,9 @@
               d.vy = 0;
               d.vx = 0;
               d.vr = 0;
+              if (d.type === 'peeled') {
+                d.settleFrame = (d.frameOffset + Math.floor(Math.max(0, now - d.born) / PEELED_SPRITE.frameMs)) % PEELED_SPRITE.frames;
+              }
             }
           }
         }
@@ -687,7 +894,9 @@
     function drawPeeledSprite(d) {
       if (!images.peeledSprite) return;
       const age = Math.max(0, now - d.born);
-      const frame = (d.frameOffset + Math.floor(age / PEELED_SPRITE.frameMs)) % PEELED_SPRITE.frames;
+      const frame = d.settled
+        ? (d.settleFrame ?? 0)
+        : (d.frameOffset + Math.floor(age / PEELED_SPRITE.frameMs)) % PEELED_SPRITE.frames;
 
       ctx.save();
       ctx.translate(d.x, d.y);
@@ -894,6 +1103,9 @@
     }
 
     async function init() {
+      setupAudio();
+      updateBgmButton();
+
       const entries = await Promise.all(
         Object.entries(paths).map(async ([key, src]) => [key, await loadImage(src)])
       );
@@ -903,6 +1115,10 @@
       state = 'start';
       await initFirebase();
       hide(toast);
+
+      // 브라우저가 허용하면 페이지 오픈 시 카캇 → BGM 순서로 재생합니다.
+      // 자동재생이 차단되면 첫 클릭/터치 이후에 다시 시도합니다.
+      setTimeout(tryIntroAudio, 120);
     }
 
     canvas.addEventListener('click', onCanvasClick);
@@ -912,15 +1128,16 @@
     }, { passive: false });
 
     startBtn.addEventListener('click', startGame);
+    bgmToggle.addEventListener('click', toggleBgm);
+    window.addEventListener('pointerdown', ensureAudioAfterGesture, { once: true });
+    window.addEventListener('keydown', ensureAudioAfterGesture, { once: true });
     againBtn.addEventListener('click', () => {
       hide(rankOverlay);
+      hide(readyOverlay);
       show(startOverlay);
       state = 'start';
-      projectiles.length = 0;
-      debris.length = 0;
-      impactMarks.length = 0;
-      score = 0;
-      hitAnimStart = -Infinity;
+      clearTimeout(readyTimer);
+      clearRound();
     });
     refreshRankBtn.addEventListener('click', renderRanks);
     saveRankBtn.addEventListener('click', saveRankAndShow);
